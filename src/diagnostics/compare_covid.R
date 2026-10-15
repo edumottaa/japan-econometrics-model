@@ -1,0 +1,32 @@
+.libPaths(c("C:/Users/dudup/AppData/Local/R/win-library/4.6", .libPaths()))
+suppressPackageStartupMessages(library(bsvarSIGNs))
+setwd("C:/Users/dudup/OneDrive/NT Macro/work/psi_diagnostic")
+d <- readRDS("data_bundle.rds")
+covid_index <- match("2020 Mar", d$dates) - 12L
+stopifnot(!is.na(covid_index), covid_index > 0)
+cat("COVID index in estimation sample:", covid_index, "\n")
+spec <- specify_bsvarSIGN$new(data = d$matrix_interna, p = 12, foreign = d$matrix_externa,
+                             hyper_covid = covid_index)
+trace("optim", where = asNamespace("stats"),
+      tracer = quote(assign("diagnostic_optim_init", par, .GlobalEnv)),
+      exit = quote(assign("diagnostic_optim_result", returnValue(), .GlobalEnv)), print = FALSE)
+set.seed(123)
+system.time(spec$estimate_hyper(S = 15000, burn_in = 5000)) |> print()
+untrace("optim", where = asNamespace("stats"))
+h <- t(spec$prior$hyper)
+colnames(h) <- c("mu", "delta", "lambda", paste0("psi_", colnames(d$Y)), paste0("covid", 1:4))
+saveRDS(spec, "covid_spec.rds")
+saveRDS(h, "covid_hyper.rds")
+saveRDS(list(initial = diagnostic_optim_init, result = diagnostic_optim_result), "covid_optim.rds")
+cat("OPTIM convergence", diagnostic_optim_result$convergence, "\n")
+cat("RETAINED transitions", sum(rowSums(abs(h[-1, ] - h[-nrow(h), ])) > 0), "\n")
+cat("RETAINED unique joint states", nrow(unique(h)), "\n")
+s <- t(apply(h, 2, function(x) c(median = median(x), p025 = quantile(x, .025),
+                               p975 = quantile(x, .975), min = min(x), max = max(x))))
+print(s)
+write.csv(data.frame(parameter = rownames(s), s, row.names = NULL), "covid_hyper_summary.csv", row.names = FALSE)
+png("covid_psi_traces.png", width = 1800, height = 1200, res = 150)
+par(mfrow = c(5, 2), mar = c(2, 4, 2, 1))
+for (i in 4:13) plot(h[, i], type = "l", main = colnames(h)[i], xlab = "", ylab = "psi")
+dev.off()
+cat("DONE COVID\n")

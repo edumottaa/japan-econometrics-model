@@ -1,0 +1,303 @@
+During startup - Warning messages:
+1: Setting LC_COLLATE=C.UTF-8 failed 
+2: Setting LC_CTYPE=C.UTF-8 failed 
+3: Setting LC_MONETARY=C.UTF-8 failed 
+4: Setting LC_TIME=C.UTF-8 failed 
+VERSIONS
+    bsvarSIGNs         bsvars     fabletools distributional 
+         "3.0"          "4.0"        "0.8.0"        "0.8.1" 
+FORECAST METHOD
+function (object, horizon = 1, exogenous_forecast = NULL, conditional_forecast = NULL, 
+    ...) 
+{
+    stopifnot(`forecast: specify horizon as integer.` = horizon%%1 == 
+        0)
+    posterior_Sigma = object$posterior$Sigma
+    posterior_A = object$posterior$A
+    T = ncol(object$last_draw$data_matrices$X)
+    X_T = object$last_draw$data_matrices$X[, T]
+    Y = object$last_draw$data_matrices$Y
+    posterior_hyper = object$posterior$hyper
+    covid = object$last_draw$prior$covid
+    covid = ifelse(is.null(covid), -1, covid)
+    N = nrow(posterior_Sigma)
+    K = length(X_T)
+    d = K - N * object$last_draw$p - 1
+    S = dim(posterior_Sigma)[3]
+    if (d == 0) {
+        exogenous_forecast = matrix(NA, horizon, 1)
+    }
+    else {
+        stopifnot(`Forecasted values of exogenous variables are missing.` = (d > 
+            0) & !is.null(exogenous_forecast))
+        stopifnot(`The matrix of exogenous_forecast does not have a correct number of columns.` = ncol(exogenous_forecast) == 
+            d)
+        stopifnot(`Provide exogenous_forecast for all forecast periods specified by argument horizon.` = nrow(exogenous_forecast) == 
+            horizon)
+        stopifnot(`Argument exogenous has to be a matrix.` = is.matrix(exogenous_forecast) & 
+            is.numeric(exogenous_forecast))
+        stopifnot(`Argument exogenous cannot include missing values.` = sum(is.na(exogenous_forecast)) == 
+            0)
+    }
+    if (is.null(conditional_forecast)) {
+        conditional_forecast = matrix(NA, horizon, N)
+    }
+    else {
+        stopifnot(`Argument conditional_forecast must be a matrix with numeric values.` = is.matrix(conditional_forecast) & 
+            is.numeric(conditional_forecast))
+        stopifnot(`Argument conditional_forecast must have the number of rows equal to \n              the value of argument horizon.` = nrow(conditional_forecast) == 
+            horizon)
+        stopifnot(`Argument conditional_forecast must have the number of columns \n              equal to the number of columns in the used data.` = ncol(conditional_forecast) == 
+            N)
+    }
+    fore = .Call(`_bsvarSIGNs_forecast_bsvarSIGNs`, posterior_Sigma, 
+        posterior_A, posterior_hyper, X_T, exogenous_forecast, 
+        conditional_forecast, covid, T, horizon)
+    output = specify_forecasts$new(fore, Y)
+    return(output)
+}
+<bytecode: 0x000001e4adeab230>
+<environment: namespace:bsvarSIGNs>
+PRIOR INITIALIZER
+function (data, p, exogenous = NULL, stationary = rep(FALSE, 
+    ncol(data))) 
+{
+    stopifnot(`Argument p must be a positive integer number.` = p > 
+        0 & p%%1 == 0)
+    data_m = bsvars::specify_data_matrices$new(data, p, exogenous)
+    Y = t(data_m$Y)
+    X = t(data_m$X)
+    N = ncol(Y)
+    stopifnot(`Argument stationary must be a logical vector of length equal to the number of columns in data.` = length(stationary) == 
+        N & is.logical(stationary))
+    d = 0
+    if (!is.null(exogenous)) {
+        d = ncol(exogenous)
+    }
+    T = nrow(Y)
+    K = N * p + 1 + d
+    B = matrix(0, K, N)
+    B[1:N, ] = diag(!stationary)
+    V = diag(c(kronecker((1:p)^-2, rep(1, N)), rep(100, 1 + d)))
+    s2.ols = rep(NA, N)
+    for (n in 1:N) {
+        y = as.matrix(Y[(p + 5 + 1):T, n])
+        x = matrix(1, T - p - 5, 1)
+        for (i in 1:(p + 5)) {
+            x = cbind(x, Y[(p + 5 + 1):T - i, n])
+        }
+        s2.ols[n] = sum(((diag(T - p - 5) - x %*% solve(t(x) %*% 
+            x) %*% t(x)) %*% y)^2)/(T - p - 5)
+    }
+    hyper = matrix(NA, N + 3 + 4, 1)
+    hyper[1:3] = c(1, 1, 0.2)
+    hyper[4:(N + 3), ] = s2.ols
+    hyper[(N + 4):(N + 7), ] = c(1, 1, 1, 0.8)
+    scale = gamma_scale(1, 1)
+    shape = gamma_shape(1, 1)
+    self$p = p
+    self$hyper = hyper
+    self$A = t(B)
+    self$V = V
+    self$S = diag(N)
+    self$nu = N + 2
+    self$Y = t(Y)
+    self$X = t(X)
+    ybar = colMeans(matrix(Y[1:p, ], ncol = N))
+    Ysoc = diag(ybar)
+    Xsoc = cbind(kronecker(t(rep(1, p)), Ysoc), matrix(0, N, 
+        d + 1))
+    Ysur = t(ybar)
+    Xsur = cbind(kronecker(t(rep(1, p)), Ysur), 1, matrix(0, 
+        1, d))
+    self$Ysoc = t(Ysoc)
+    self$Xsoc = t(Xsoc)
+    self$Ysur = t(Ysur)
+    self$Xsur = t(Xsur)
+    self$mu.scale = scale
+    self$mu.shape = shape
+    self$delta.scale = scale
+    self$delta.shape = shape
+    self$lambda.scale = gamma_scale(0.2, 0.4)
+    self$lambda.shape = gamma_shape(0.2, 0.4)
+    self$psi.scale = igamma_scale(0.02^2, 0.02^2)
+    self$psi.shape = igamma_shape(0.02^2, 0.02^2)
+}
+<bytecode: 0x000001e4adf260e8>
+<environment: namespace:bsvarSIGNs>
+ESTIMATE METHOD
+function (specification, S, thin = 1, show_progress = TRUE) 
+{
+    if (ncol(specification$prior$hyper) > 1 && S > ncol(specification$prior$hyper)) {
+        stop("The number of requested draws S cannot be greater than the number of sampled hyperparameters.")
+    }
+    prior = specification$prior$get_prior()
+    identification = specification$identification$get_identification()
+    max_tries = identification$max_tries
+    max_tries = ifelse(max_tries == Inf, 0, max_tries)
+    data_matrices = specification$data_matrices$get_data_matrices()
+    p = specification$p
+    prior$B = t(prior$A)
+    prior$Ysoc = t(prior$Ysoc)
+    prior$Xsoc = t(prior$Xsoc)
+    prior$Ysur = t(prior$Ysur)
+    prior$Xsur = t(prior$Xsur)
+    Y = t(data_matrices$Y)
+    X = t(data_matrices$X)
+    Z = get_Z(identification$sign_irf)
+    sign = identification$sign_irf
+    sign[is.na(sign)] = 0
+    n_narratives = length(identification$sign_narrative)
+    get_type = list(S = 1, A = 2, B = 3)
+    if (n_narratives > 0) {
+        narrative = matrix(NA, n_narratives, 6)
+        for (i in 1:n_narratives) {
+            narrative_list = identification$sign_narrative[[i]]
+            narrative[i, 1] = get_type[[narrative_list$type]]
+            narrative[i, 2] = narrative_list$sign
+            narrative[i, 3] = narrative_list$var
+            narrative[i, 4] = narrative_list$shock
+            narrative[i, 5] = narrative_list$start - p
+            narrative[i, 6] = narrative_list$periods - 1
+        }
+    }
+    else {
+        narrative = t(c(0, 1, 1, 1, 1, 1))
+    }
+    struc = identification$sign_structural
+    struc[is.na(struc)] = 0
+    Nf = specification$num_foreign_vars
+    mc.cores = specification$mc.cores
+    if (is.null(mc.cores)) 
+        mc.cores = 1
+    mc.cores = max(1, mc.cores)
+    if (mc.cores > 1) {
+        return(estimate_par(specification, S, thin, show_progress, 
+            mc.cores))
+    }
+    qqq = .Call(`_bsvarSIGNs_bsvar_sign_cpp`, S, p, Y, X, sign, 
+        narrative, struc, Z, Nf, prior, show_progress, thin, 
+        max_tries)
+    output = specify_posterior_bsvarSIGN$new(specification, qqq$posterior)
+    output = importance_sampling(output)
+    return(output)
+}
+<bytecode: 0x000001e4adf8ebd8>
+<environment: namespace:bsvarSIGNs>
+DATA
+[1] 319  10
+ [1] "ust2y"      "ip_mundial" "brent"      "vix"        "atividade"  "cpi_core"   "juro_curto" "inclinacao" "usdjpy"    
+[10] "topix"     
+<yearmonth[2]>
+[1] "2000 Jan" "2026 Jul"
+     ust2y ip_mundial      brent        vix  atividade   cpi_core juro_curto inclinacao     usdjpy      topix 
+         0          0          0          0          0          0          0          0          0          0 
+HOLDOUT
+train_start   train_end  test_start    test_end 
+ "2000 Jan"  "2024 Jul"  "2024 Aug"  "2026 Jul" 
+RANGES
+       ust2y ip_mundial     brent       vix  atividade   cpi_core juro_curto inclinacao    usdjpy     topix
+min 0.120000  427.35908 291.12631 231.55013 442.484663 454.859983  -3.439000  0.0472381 433.91191 385.12844
+max 6.810000  463.89745 488.82416 413.78829 482.350218 468.490515   0.694700  1.6183810 506.17086 521.18304
+sd  1.769982   10.85491  49.03795  35.03909   7.771003   2.781092   1.093292  0.4195242  14.80873  31.82474
+HYPER
+ [1] 1.000000e+00 1.000000e+00 2.000000e-01 2.701906e-02 1.084392e+00 9.250734e+01 2.714944e+02 2.307299e+00 5.480660e-02
+[10] 2.052130e-03 3.601919e-03 4.209211e+00 1.889666e+01 1.000000e+00 1.000000e+00 1.000000e+00 8.000000e-01
+PRIOR A FIRST DIAGONAL
+ [1] 1 1 1 1 1 1 1 1 1 1
+BASELINE START
+BASELINE POST SAVED
+   user  system elapsed 
+  78.36    0.50   82.87 
+BASELINE METRICS
+    RMSE      MAE     CRPS 
+254.3506 116.3761  51.5281 
+SAMPLE RANGES
+[1] -25718.15  11864.00
+         0%          1%         50%         99%        100% 
+-25718.1456  -2342.6869    467.1822   1279.5734  11863.9963 
+       date   actual       mean    median         q05       q95          min        max
+1  2024 Aug 468.8592  468.12393 468.12664   467.71819  468.5192    467.51257   468.7003
+2  2024 Sep 468.3981  468.21666 468.21433   467.57166  468.9321    467.23046   469.3748
+3  2024 Oct 468.9511  468.30144 468.36820   467.25282  469.1594    466.59840   470.0652
+4  2024 Nov 469.3181  468.31944 468.41725   467.07338  469.5228    465.88988   470.9890
+5  2024 Dec 469.6837  468.26617 468.27860   466.38810  470.0348    464.59165   471.7630
+6  2025 Jan 469.8661  468.12390 468.06356   465.51271  470.6204    462.54659   473.6997
+7  2025 Feb 469.7749  467.87882 467.78954   464.18387  471.4104    459.79692   475.6755
+8  2025 Mar 470.2297  467.45831 467.39011   462.31897  472.4147    455.88909   478.2376
+9  2025 Apr 470.8629  466.81032 466.87439   459.55208  473.7623    449.73414   481.5980
+10 2025 May 471.3127  465.82143 466.30409   455.20348  475.8622    441.30545   486.3436
+11 2025 Jun 471.3127  464.32156 465.03797   448.75987  479.3112    422.63006   492.7865
+12 2025 Jul 471.4921  462.06420 463.47365   438.91728  482.8488    391.81091   504.7035
+13 2025 Aug 471.4921  458.69361 461.08270   424.55473  489.3665    342.35088   526.8857
+14 2025 Sep 471.3127  453.65830 457.33590   403.04755  497.6807    260.77021   563.6546
+15 2025 Oct 471.9391  446.07720 452.10440   370.79221  522.1061    128.45957   622.5160
+16 2025 Nov 472.2953  434.66931 443.48210   321.03310  542.4157    -85.74917   717.3056
+17 2025 Dec 472.0283  417.49632 431.84194   235.48155  569.4980   -432.09316   870.7040
+18 2026 Jan 471.8499  391.55432 414.52430   112.43114  606.0334   -992.91365  1117.1362
+19 2026 Feb 471.3127  352.27722 392.23064   -87.20667  660.4705  -1899.20169  1514.7509
+20 2026 Mar 471.9391  292.71688 362.07054  -397.02524  766.7809  -3364.00262  2155.0357
+21 2026 Apr 472.2953  202.34207 314.92665  -834.00739  941.0026  -5731.19112  3187.8046
+22 2026 May 472.7388   65.03337 236.86387 -1570.28779 1209.6487  -9556.13195  4852.1523
+23 2026 Jun 472.8272 -143.85587 122.16757 -2594.58485 1584.0109 -15735.51099  7535.4987
+24 2026 Jul 473.2684 -462.03444 -14.34966 -4198.59266 2051.2005 -25718.14556 11863.9963
+DATA COEFFICIENT DIMENSIONS
+$hyper
+[1]  17 200
+
+$A
+[1]  10 121 200
+
+$B
+[1]  10  10 200
+
+$Q
+[1]  10  10 200
+
+$Sigma
+[1]  10  10 200
+
+$Theta0
+[1]  10  10 200
+
+$shocks
+[1]  10 283 200
+
+$sigma
+[1]  10 283 200
+
+$ess
+NULL
+
+[1] 121 283
+STATE VS LAST DATA
+     topix      ust2y ip_mundial      brent        vix  atividade   cpi_core juro_curto inclinacao     usdjpy      topix 
+  499.2456     4.8300   462.8258   438.3401   263.4045   474.6670   465.7763    -0.4420     0.5034   494.8334   498.6483 
+           
+    1.0000 
+       ust2y ip_mundial    brent      vix atividade cpi_core juro_curto inclinacao   usdjpy    topix
+[294,]  4.74   463.8675 440.9763 253.9237  474.2320 468.0278      0.077    0.67395 506.1709 518.0739
+[295,]  4.50   463.8975 444.4414 266.5143  474.9271 468.4905      0.078    0.70700 505.9552 521.1830
+ROOTS
+ROOT DISTRIBUTION
+       0%       25%       50%       75%       90%       95%       99%      100% 
+0.9987657 1.0017346 1.0041561 1.0080044 1.0120613 1.0154077 1.0220024 1.0288516 
+UNSTABLE FRACTION 0.97 
+   draw     root     rmse      final
+1    14 1.006240 6805.510 -25718.146
+2   141 1.008352 2963.501  11863.996
+3    25 1.016167 1968.947  -6958.386
+4    84 1.002788 1915.109  -6680.160
+5    77 1.013393 1833.928  -6579.614
+6    16 1.003786 1737.772  -5807.563
+7   136 1.006602 1593.592  -5469.593
+8   145 1.009614 1566.000   6589.719
+9   139 1.001336 1539.153   6411.495
+10  108 1.008792 1423.180  -4748.365
+CONDITIONAL FORECAST METRICS
+    RMSE      MAE 
+1.881037 1.675494 
+FIRST HORIZON NATIVE VS CONDITIONAL
+     native conditional      actual 
+   468.1239    468.6375    468.8592 
+DONE
