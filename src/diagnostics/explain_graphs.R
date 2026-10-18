@@ -1,3 +1,6 @@
+.libPaths(c("C:/Users/dudup/AppData/Local/R/win-library/4.6", .libPaths()))
+library(bsvarSIGNs)
+
 task_root <- "C:/Users/dudup/OneDrive/NT Macro"
 task_work <- file.path(task_root, "work", "psi_diagnostic")
 h <- readRDS(file.path(task_work, "covid_reliable_hyper.rds"))
@@ -17,10 +20,9 @@ for (j in 1:3) plot(h[, j], type = "l", col = "#D4008D",
   main = paste(colnames(h)[j], "- estimacao corrigida, com COVID"))
 dev.off()
 cat("PLOT SAVED\n")
-.libPaths(c("C:/Users/dudup/AppData/Local/R/win-library/4.6", .libPaths()))
 cat("User library exists", dir.exists("C:/Users/dudup/AppData/Local/R/win-library/4.6"), "\n")
 if (requireNamespace("bsvarSIGNs", quietly = TRUE)) {
   cat("PACKAGE", as.character(packageVersion("bsvarSIGNs")), "\n")
-  print(names(bsvarSIGNs::specify_prior_bsvarSIGN$public_methods))
-  print(formals(bsvarSIGNs::specify_bsvarSIGN$public_methods$initialize)[c("hyper_mu","hyper_delta","hyper_lambda","hyper_psi")])
+  print(names(specify_prior_bsvarSIGN$public_methods))
+  print(formals(specify_bsvarSIGN$public_methods$initialize)[c("hyper_mu","hyper_delta","hyper_lambda","hyper_psi")])
 }

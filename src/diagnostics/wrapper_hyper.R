@@ -1,5 +1,8 @@
 # Substitui spec$estimate_hyper() na versao 3.0 do bsvarSIGNs.
 # Mantem a prior e os dados do modelo; corrige o calculo numerico e as propostas.
+
+library(coda)
+
 estimar_hyper_corrigido <- function(spec, S = 15000L, burn_in = 5000L,
                                    inicio_covid = NULL) {
   stopifnot(S > burn_in, burn_in > 0, S %% 1 == 0, burn_in %% 1 == 0)
@@ -72,7 +75,7 @@ estimar_hyper_corrigido <- function(spec, S = 15000L, burn_in = 5000L,
   acceptance <- mean(accepted[-(1:burn_in)])
   cat("Taxa de movimentos aceitos:", round(100*acceptance, 1), "%\n")
   if (requireNamespace("coda", quietly = TRUE)) {
-    ess <- coda::effectiveSize(retained[, 1:n, drop = FALSE])
+    ess <- effectiveSize(retained[, 1:n, drop = FALSE])
     cat("Menor tamanho efetivo de amostra:", round(min(ess)), "\n")
     if (min(ess) < 50) warning("Pouca informacao independente em alguns parametros; aumente S e confira os graficos.")
   }

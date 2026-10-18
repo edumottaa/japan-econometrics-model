@@ -1,7 +1,10 @@
 # Diagnostic estimator: same bsvarSIGNs likelihood and prior, with parameter
 # transformations applied consistently to optimization and Metropolis proposals.
+
 .libPaths(c("C:/Users/dudup/AppData/Local/R/win-library/4.6", .libPaths()))
 suppressPackageStartupMessages(library(bsvarSIGNs))
+library(coda)
+
 setwd("C:/Users/dudup/OneDrive/NT Macro/work/psi_diagnostic")
 source("stable_likelihood.R")
 scenario <- if (length(commandArgs(TRUE))) commandArgs(TRUE)[1] else "baseline"
@@ -109,7 +112,7 @@ cat("RETAINED acceptance", acceptance, "unique states", nrow(unique(h)), "\n")
 s <- t(apply(h, 2, function(x) c(median = median(x), p025 = quantile(x, .025),
     p975 = quantile(x, .975), min = min(x), max = max(x))))
 print(s)
-ess <- coda::effectiveSize(h[, 1:n])
+ess <- effectiveSize(h[, 1:n])
 cat("ESS\n"); print(ess)
 write.csv(data.frame(parameter = rownames(s), s, row.names = NULL),
           paste0(scenario, "_reliable_summary.csv"), row.names = FALSE)

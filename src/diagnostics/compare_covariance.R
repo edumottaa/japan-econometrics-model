@@ -1,5 +1,7 @@
 .libPaths(c("C:/Users/dudup/AppData/Local/R/win-library/4.6", .libPaths()))
 suppressPackageStartupMessages(library(bsvarSIGNs))
+library(coda)
+
 setwd("C:/Users/dudup/OneDrive/NT Macro/work/psi_diagnostic")
 scenario <- if (length(commandArgs(TRUE))) commandArgs(TRUE)[1] else "baseline"
 d <- readRDS("data_bundle.rds")
@@ -42,7 +44,7 @@ write.csv(data.frame(parameter = rownames(s), s, row.names = NULL),
   paste0(scenario, "_covariance_corrected_summary.csv"), row.names = FALSE)
 if (requireNamespace("coda", quietly = TRUE)) {
   cat("EFFECTIVE sample sizes\n")
-  print(coda::effectiveSize(h[, if (scenario == "covid") 1:17 else 1:13]))
+  print(effectiveSize(h[, if (scenario == "covid") 1:17 else 1:13]))
 }
 png(paste0(scenario, "_covariance_corrected_traces.png"), width = 1800, height = 1200, res = 150)
 par(mfrow = c(5, 2), mar = c(2, 4, 2, 1))

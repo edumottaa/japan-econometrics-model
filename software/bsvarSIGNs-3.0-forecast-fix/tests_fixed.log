@@ -1,0 +1,19 @@
+During startup - Warning messages:
+1: Setting LC_COLLATE=C.UTF-8 failed 
+2: Setting LC_CTYPE=C.UTF-8 failed 
+3: Setting LC_MONETARY=C.UTF-8 failed 
+4: Setting LC_TIME=C.UTF-8 failed 
+               test    max_error passed
+1   AR_p1_exogFALSE 1.295020e-12   TRUE
+2    AR_p1_exogTRUE 1.378453e-12   TRUE
+3   AR_p2_exogFALSE 5.863088e-12   TRUE
+4    AR_p2_exogTRUE 6.132678e-12   TRUE
+5   AR_p3_exogFALSE 9.518220e-13   TRUE
+6    AR_p3_exogTRUE 9.747758e-13   TRUE
+7   AR_p6_exogFALSE 1.169231e-12   TRUE
+8    AR_p6_exogTRUE 1.384500e-12   TRUE
+9  AR_p12_exogFALSE 1.034728e-12   TRUE
+10  AR_p12_exogTRUE 1.069145e-12   TRUE
+11 COVID_covariance 2.664535e-15   TRUE
+12 conditional_path 0.000000e+00   TRUE
+Package: 3.0.0.1 C:/Users/dudup/OneDrive/japan-econometrics-model/software/bsvarSIGNs-3.0-forecast-fix/library/bsvarSIGNs 

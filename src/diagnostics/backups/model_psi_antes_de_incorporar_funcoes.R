@@ -5,7 +5,8 @@ library(tidyverse)
 library(estatapi)
 library(fpp3)
 library(bsvarSIGNs)
-
+library(readxl)
+library(jsonlite)
 
 # FRED
 fredr_set_key("19da91aa806704d2aa100725f3e017a7")
@@ -55,7 +56,7 @@ jgb <- bind_rows(le_jgb("historical/jgbcme_all.csv"), le_jgb("jgbcme.csv")) |>
 download.file("https://www.cpb.nl/system/files/cpbmedia/CPB-world-trade-monitor-july-2026.xlsx",
               "cpb_wtm.xlsx", mode = "wb")
 
-ip_mundial <- readxl::read_excel("cpb_wtm.xlsx", sheet = "inpro_out", skip = 3) |>
+ip_mundial <- read_excel("cpb_wtm.xlsx", sheet = "inpro_out", skip = 3) |>
   filter(...2 == "ipz_w1_qnmi_sm") |>
   pivot_longer(matches("^\\d{4}m"), names_to = "date", values_to = "ip_mundial") |>
   transmute(date = ym(date), ip_mundial)
@@ -70,7 +71,7 @@ download.file(paste0("https://www.esri.cao.go.jp/jp/stat/di/", arq_ci),
               "ci.xlsx", mode = "wb")
 
 
-atividade <- readxl::read_excel("ci.xlsx", skip = 6, col_names = FALSE) |>
+atividade <- read_excel("ci.xlsx", skip = 6, col_names = FALSE) |>
   transmute(date = make_date(...2, ...3), atividade = ...5) |>
   filter(date >= "2000-01-01")
 
@@ -78,7 +79,7 @@ atividade <- readxl::read_excel("ci.xlsx", skip = 6, col_names = FALSE) |>
 shadow <- read_csv("https://raw.githubusercontent.com/jouchinakajima/program/main/yield_M.csv") |>
   transmute(date = ym(YYYYMM), shadow = ShadowRate)
 
-boj <- jsonlite::fromJSON("https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=FM02&code=STRACLUCON&startDate=200001")
+boj <- fromJSON("https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=FM02&code=STRACLUCON&startDate=200001")
 
 call_rate <- tibble(date      = ym(boj$RESULTSET$VALUES$SURVEY_DATES[[1]]),
                     call_rate = boj$RESULTSET$VALUES$VALUES[[1]])

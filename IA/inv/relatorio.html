@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Erro nos hiperparâmetros do bsvarSIGNs</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 18mm 17mm; }
+  :root {
+    --ink: #1c2430;
+    --muted: #5a6575;
+    --rule: #d5dae2;
+    --accent: #1f5a85;
+    --soft: #eef3f8;
+    --bad: #b42318;
+    --badsoft: #fdecea;
+    --good: #18794e;
+    --goodsoft: #e8f5ee;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background: #fff;
+         font: 10.5pt/1.5 Calibri, "Segoe UI", Arial, sans-serif; }
+  h1, h2, h3 { font-family: Cambria, Georgia, serif; color: var(--ink); line-height: 1.25; }
+  h1 { font-size: 20pt; margin: 4pt 0 6pt; }
+  h2 { font-size: 13.5pt; margin: 18pt 0 6pt; padding-bottom: 3pt; border-bottom: 1.5pt solid var(--accent); break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 12pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 6pt; }
+  ul, ol { margin: 0 0 6pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  .eyebrow { font-size: 8.5pt; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .meta { display: flex; gap: 18pt; font-size: 9.5pt; color: var(--muted); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 5pt 0; margin: 6pt 0 12pt; }
+  .meta b { color: var(--ink); }
+  .box { border: 1px solid var(--rule); background: var(--soft); border-radius: 4pt; padding: 8pt 11pt; margin: 6pt 0 10pt; break-inside: avoid; }
+  .box.bad { background: var(--badsoft); border-color: #f3c3bd; }
+  .box.good { background: var(--goodsoft); border-color: #b9e0c9; }
+  .box h3 { margin-top: 0; }
+  code, pre { font-family: Consolas, "Courier New", monospace; font-size: 9pt; }
+  code { background: #f1f3f6; padding: 0 2pt; border-radius: 2pt; }
+  pre { background: #f6f7f9; border: 1px solid var(--rule); border-radius: 4pt; padding: 7pt 9pt; margin: 4pt 0 8pt; white-space: pre-wrap; break-inside: avoid; }
+  pre .c { color: #6b7280; }
+  table { border-collapse: collapse; width: 100%; margin: 4pt 0 10pt; font-size: 9.5pt; break-inside: avoid; }
+  th, td { border-bottom: 1px solid var(--rule); padding: 3pt 6pt; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 700; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.hl td { background: var(--badsoft); font-weight: 700; color: var(--bad); }
+  .steps { counter-reset: s; list-style: none; padding-left: 0; }
+  .steps li { counter-increment: s; position: relative; padding-left: 22pt; margin-bottom: 5pt; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 15pt; height: 15pt; border-radius: 50%; background: var(--accent); color: #fff; font-size: 8.5pt; font-weight: 700; text-align: center; line-height: 15pt; }
+  .sol { border: 1px solid var(--rule); border-radius: 4pt; padding: 8pt 11pt; margin: 6pt 0 9pt; break-inside: avoid; }
+  .sol h3 { margin-top: 0; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 1pt 5pt; border-radius: 3pt; margin-left: 4pt; vertical-align: 1pt; }
+  .tag.now { background: var(--accent); color: #fff; }
+  .tag.plan { background: var(--goodsoft); color: var(--good); border: 1px solid #b9e0c9; }
+  .pc { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin-top: 4pt; }
+  .pc div { font-size: 9.5pt; }
+  .pc b { display: block; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .small { font-size: 9pt; color: var(--muted); }
+  .bad-t { color: var(--bad); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="eyebrow">NT Macro · Japão · Núcleo A · Etapa 2 (forma reduzida)</div>
+<h1>Erro na estimação dos hiperparâmetros do bsvarSIGNs 3.0</h1>
+<div class="meta">
+  <span><b>Para:</b> Jota</span>
+  <span><b>De:</b> Dudu</span>
+  <span><b>Data:</b> 14/10/2026</span>
+  <span><b>Pacote:</b> bsvarSIGNs 3.0 (CRAN)</span>
+</div>
+
+<div class="box">
+  <h3>Resumo</h3>
+  <ul>
+    <li>Ao estimar a prior hierárquica (Giannone, Lenza e Primiceri, 2015) com <code>spec$estimate_hyper()</code>, a cadeia dos hiperparâmetros fica <b>presa numa região inválida</b>. Todos os valores de μ, δ, λ e ψ dessa estimação são inválidos, não só o do brent, onde o problema apareceu.</li>
+    <li><b>Causa:</b> um erro no tratamento de falhas numéricas no código C++ do pacote. Um código de erro (−1e10) entra <b>subtraído</b> na conta e vira +1e10, a melhor nota possível.</li>
+    <li><b>Não é problema dos dados.</b> O valor inicial que o pacote calcula para o brent está correto.</li>
+    <li><b>Decisão provisória:</b> seguir a etapa 2 com os hiperparâmetros fixos na moda, calculada com uma função corrigida, e discutir com você a volta para a versão hierárquica (solução 2).</li>
+  </ul>
+</div>
+
+<h2>1. O sintoma</h2>
+<p>Modelo: 10 variáveis (4 externas via <code>foreign</code>: ust2y, ip_mundial, brent, vix; 6 domésticas: atividade, cpi_core, juro_curto, inclinacao, usdjpy, topix), p = 12, amostra de jan/2000 a jul/2026 (319 meses), prior hierárquica com λ, μ, δ e ψ estimados. Comando: <code>spec$estimate_hyper(S = 15000, burn_in = 5000)</code>, com <code>set.seed(123)</code>.</p>
+<ul>
+  <li>O ψ do brent saiu em <b>2.55e-06</b>, mas a variância do erro de uma AR(12) do brent é cerca de <b>94</b>.</li>
+  <li>Os traços de μ, δ e λ andavam em faixas minúsculas (por exemplo, λ entre 0.21831 e 0.21836), em ondas lentas. A cadeia estava praticamente parada.</li>
+</ul>
+
+<h2>2. A causa, em linguagem simples</h2>
+<ol class="steps">
+  <li>Para estimar λ, μ, δ e ψ, o pacote testa vários valores e dá uma <b>nota</b> a cada um, que é a log-posterior dos hiperparâmetros. Valores melhores ganham nota maior.</li>
+  <li>A nota é uma subtração: <b>nota = A − B</b>. A é a verossimilhança marginal com dados + observações fictícias da prior; B é a mesma conta só com as observações fictícias.</li>
+  <li>Quando algum hiperparâmetro fica muito perto de zero, a conta de B fica numericamente impossível (matriz quase singular). Nesse caso, o pacote escreve <b>−1e10</b> no lugar, como aviso de erro.</li>
+  <li>Como B entra subtraído, a nota vira A − (−1e10) = <span class="bad-t">+1e10</span>. Uma nota normal fica em torno de −4000.</li>
+  <li>O algoritmo (Metropolis) interpreta +1e10 como o melhor ponto possível, vai para ele e <b>nunca mais sai</b>, porque qualquer ponto válido tem nota muito menor.</li>
+</ol>
+
+<h2>3. A causa, no código</h2>
+<p>Arquivo <code>src/sample_hyper.cpp</code> do pacote (versão 3.0, igual à do CRAN):</p>
+<pre><span class="c">// log_ml(): verossimilhança marginal</span>
+<span class="c">// se alguma matriz não é positiva definida, devolve o código de erro</span>
+if (!Omega.is_sympd() or !Psi.is_sympd() or !XX.is_sympd()) {
+  return -1e10;                                          <span class="c">// linha 131</span>
+}
+
+<span class="c">// log_ml_dummy(): nota = A − B</span>
+double log_ml_plus = log_ml(..., Yplus, Xplus);          <span class="c">// A: dados + dummies</span>
+double log_ml_star = log_ml(..., Ystar, Xstar);          <span class="c">// B: só dummies</span>
+return log_ml_plus - log_ml_star + jacobian;             <span class="c">// linha 217: −(−1e10) = +1e10</span></pre>
+<p>A parte B usa só 11 observações fictícias (10 de soma de coeficientes e 1 de raiz unitária) para 121 coeficientes por equação. Ela depende quase toda da variância da prior de Minnesota, que é proporcional a λ²/ψ. Quando μ, δ ou algum ψ fica muito pequeno, a matriz de B fica quase singular e a conta falha.</p>
+<p><b>Segunda forma do mesmo erro:</b> quando A e B falham juntas, a nota vira −1e10 − (−1e10) = 0, ainda muito acima de qualquer valor válido (≈ −4000). Foi o que aconteceu quando deixei o otimizador rodar até o fim: λ foi para o limite (1e-06).</p>
+<p><b>Por que a cadeia chega lá tão rápido:</b> o pacote acha o ponto de partida com <code>optim</code>, mas para em 100 iterações sem convergir (código de convergência 1). A variância de proposta, montada a partir da Hessiana nesse ponto, fica larga demais, e a cadeia propõe valores perto de zero logo no início. No meu teste, ela caiu na região inválida na <b>9ª iteração</b>.</p>
+
+<h2>4. Evidências</h2>
+<h3>4.1 A nota explode quando o ψ do brent fica pequeno</h3>
+<p class="small">Calculado com as funções do próprio pacote, mantendo os outros hiperparâmetros fixos no ponto de partida do pacote.</p>
+<table>
+  <tr><th>ψ do brent</th><th class="n">A (dados + dummies)</th><th class="n">B (só dummies)</th><th class="n">Nota usada (A − B)</th></tr>
+  <tr><td>93 (valor normal)</td><td class="n">−4627.6</td><td class="n">−644.5</td><td class="n">−3983.1</td></tr>
+  <tr><td>1</td><td class="n">−4797.2</td><td class="n">−642.2</td><td class="n">−4155.0</td></tr>
+  <tr><td>0.0001</td><td class="n">−5395.4</td><td class="n">−637.6</td><td class="n">−4757.8</td></tr>
+  <tr class="hl"><td>2.55e-06 (o da cadeia)</td><td class="n">−5637.6</td><td class="n">−1e10</td><td class="n">+9 999 994 362</td></tr>
+  <tr class="hl"><td>1e-08</td><td class="n">−6003.3</td><td class="n">−1e10</td><td class="n">+9 999 993 997</td></tr>
+</table>
+
+<h3>4.2 Outros testes</h3>
+<ul>
+  <li><b>Reprodução exata:</b> com os mesmos dados e <code>set.seed(123)</code>, a cadeia termina nos mesmos valores obtidos antes (μ = 0.0422, λ = 0.2192, ψ do brent = 2.555e-06). <b>100% dos draws</b> mantidos estão na região inválida (nota &gt; 0).</li>
+  <li><b>ψ fixos</b> (<code>hyper_psi = FALSE</code>): a cadeia cai na armadilha por δ muito pequeno. Também 100% dos draws na região inválida.</li>
+  <li><b>Dados divididos por 100</b> (escala log, para a qual as hiperpriors padrão foram pensadas): o mesmo, 100% dos draws na região inválida.</li>
+  <li><b>Issues do GitHub:</b> nenhum issue aberto ou fechado relata esse erro.</li>
+</ul>
+
+<h3>4.3 Os dados estão corretos, e o mapeamento dos ψ está confirmado</h3>
+<p>O pacote junta as variáveis como <code>cbind(foreign, data)</code> e usa como ψ inicial a variância do erro de uma AR(17) de cada coluna. Esses valores batem com uma AR(12) calculada à parte, na mesma ordem:</p>
+<table>
+  <tr><th>ψ</th><th>Variável</th><th class="n">ψ inicial do pacote</th><th class="n">Variância AR(12)</th></tr>
+  <tr><td>1</td><td>ust2y</td><td class="n">0.0276</td><td class="n">0.0303</td></tr>
+  <tr><td>2</td><td>ip_mundial</td><td class="n">1.03</td><td class="n">1.02</td></tr>
+  <tr><td>3</td><td>brent</td><td class="n">92.6</td><td class="n">93.7</td></tr>
+  <tr><td>4</td><td>vix</td><td class="n">276.1</td><td class="n">279.6</td></tr>
+  <tr><td>5</td><td>atividade</td><td class="n">2.21</td><td class="n">2.27</td></tr>
+  <tr><td>6</td><td>cpi_core</td><td class="n">0.0576</td><td class="n">0.0690</td></tr>
+  <tr><td>7</td><td>juro_curto</td><td class="n">0.00224</td><td class="n">0.00250</td></tr>
+  <tr><td>8</td><td>inclinacao</td><td class="n">0.00378</td><td class="n">0.00400</td></tr>
+  <tr><td>9</td><td>usdjpy</td><td class="n">4.39</td><td class="n">4.59</td></tr>
+  <tr><td>10</td><td>topix</td><td class="n">18.7</td><td class="n">19.6</td></tr>
+</table>
+
+<h2>5. Consequências</h2>
+<ul>
+  <li>Nenhum resultado de <code>estimate_hyper()</code> com esse modelo deve ser usado, nem nada estimado a partir dele.</li>
+  <li>Na segunda forma do erro (λ = 1e-06), o <code>estimate()</code> nem chega a rodar: falha com <code>NA em vetor de probabilidades</code>.</li>
+  <li>Ponto separado: <code>estimate()</code> leva cerca de <b>0.65 s por draw</b> nesse modelo, ou seja, cerca de 1h50 para 10 000 draws. Isso vem do tamanho do modelo (10 variáveis × 12 defasagens, com o passo de importância do bloco externo), não do erro.</li>
+</ul>
+
+<h2>6. Soluções possíveis</h2>
+
+<div class="sol">
+  <h3>Solução 1: fixar os hiperparâmetros na moda <span class="tag now">Decisão provisória</span></h3>
+  <p>Encontrar o ponto de nota máxima com uma função corrigida (mesmas fórmulas do pacote, mas falha numérica = região proibida) e usar esse ponto para todos os draws do <code>estimate()</code>. O otimizador converge e a Hessiana é positiva definida.</p>
+  <table>
+    <tr><th>μ</th><th>δ</th><th>λ</th><th>ust2y</th><th>ip_mundial</th><th>brent</th><th>vix</th></tr>
+    <tr><td>0.0333</td><td>0.0793</td><td>0.429</td><td>0.405</td><td>7.49</td><td>981</td><td>2415</td></tr>
+    <tr><th>atividade</th><th>cpi_core</th><th>juro_curto</th><th>inclinacao</th><th>usdjpy</th><th>topix</th><th></th></tr>
+    <tr><td>34.5</td><td>1.17</td><td>0.0205</td><td>0.0601</td><td>76.6</td><td>196</td><td></td></tr>
+  </table>
+<pre><span class="c"># ordem: mu, delta, lambda, 4 psi externos, 6 psi domésticos</span>
+moda <- c(0.0332882, 0.0792638, 0.428852,
+          0.404967, 7.48788, 980.904, 2415.06,
+          34.4905, 1.17210, 0.0205434, 0.0601272, 76.5726, 195.793)
+
+<span class="c"># + 4 parâmetros de COVID, inativos</span>
+spec$prior$hyper <- matrix(c(moda, 1, 1, 1, 0.8), ncol = 1)
+post <- estimate(spec, S = 2000)</pre>
+  <div class="pc">
+    <div><b>A favor</b>Simples e rápido. O <code>estimate()</code> roda sem NA. A literatura também usa essa alternativa (maximizar a verossimilhança marginal, o "empirical Bayes" discutido em GLP 2015).</div>
+    <div><b>Contra</b>Ignora a incerteza sobre os hiperparâmetros, então não é a prior hierárquica do plano. Os valores valem para os dados até jul/2026 e precisam ser recalculados quando a base mudar.</div>
+  </div>
+</div>
+
+<div class="sol">
+  <h3>Solução 2: amostrador corrigido <span class="tag plan">O que o plano pede</span></h3>
+  <p>Refazer o "passeio" do <code>estimate_hyper()</code> em R: um Metropolis em log(hiperparâmetros), com a nota corrigida e proposta baseada na Hessiana da moda válida. Os draws vão para <code>spec$prior$hyper</code>, e o resto (<code>estimate()</code>, projeção, identificação) continua no pacote.</p>
+  <table>
+    <tr><th>Teste (15 000 draws, 5 000 de burn-in)</th><th>Resultado</th></tr>
+    <tr><td>Tempo</td><td>51 s</td></tr>
+    <tr><td>Taxa de aceitação</td><td>24.9%</td></tr>
+    <tr><td>Draws na região inválida</td><td>0</td></tr>
+    <tr><td>Média 1ª metade × 2ª metade</td><td>μ 0.047 × 0.054 · δ 0.096 × 0.094 · λ 0.447 × 0.448</td></tr>
+    <tr><td>Posterior (média e intervalo de 90%)</td><td>λ 0.448 [0.378; 0.522] · μ 0.050 [0.014; 0.110] · δ 0.095 [0.034; 0.178]</td></tr>
+  </table>
+  <div class="pc">
+    <div><b>A favor</b>É a versão hierárquica do plano, e roda rápido.</div>
+    <div><b>Contra</b>São cerca de 40 linhas de código nosso, que precisam ser revisadas e validadas (convergência, sensibilidade à proposta).</div>
+  </div>
+</div>
+
+<div class="sol">
+  <h3>Solução 3: conferir com o pacote BVAR</h3>
+  <p>O pacote <code>BVAR</code> (Kuschnig e Vashold, 2021) usa a mesma prior de GLP, com limites para os hiperparâmetros. Serve para comparar os valores de λ, μ, δ e ψ.</p>
+  <div class="pc">
+    <div><b>A favor</b>Checagem independente das soluções 1 e 2.</div>
+    <div><b>Contra</b>Não tem bloco externo (<code>foreign</code>), exógenas nem ajuste de COVID. Serve como conferência, não como modelo final.</div>
+  </div>
+</div>
+
+<div class="sol">
+  <h3>Solução 4: avisar os autores do pacote</h3>
+  <p>Abrir um issue no GitHub (bsvars/bsvarSIGNs) com este diagnóstico. A correção no pacote seria tratar a falha de B como região proibida, em vez de subtrair o código de erro. Vale fazer de qualquer forma, mas não resolve o problema agora. Recompilar o pacote com a correção local também é possível, mas exige Rtools e manutenção da versão modificada.</p>
+</div>
+
+<h2>7. Pontos para discutir</h2>
+<ol>
+  <li><b>Solução 1 ou 2 para a versão final?</b> A proposta é seguir com a 1 agora e migrar para a 2 depois de revisar o código.</li>
+  <li><b>Escala dos ψ na moda:</b> os ψ ficam de 7 a 20 vezes acima das variâncias da AR, com λ = 0.43 (contra 0.2 no padrão). Na prior de Minnesota, λ e ψ se compensam, mas vale entender essa combinação.</li>
+  <li><b>Hiperprior do ψ:</b> o padrão do pacote é uma inversa-gama com moda 0.02², pensada para dados em log. Os nossos estão em log × 100.</li>
+  <li><b>Projeção:</b> o issue #91 do GitHub (aberto em 17/09/2026, sem resposta dos autores) relata que o <code>forecast()</code> não atualiza as defasagens 2 a p, começa um período antes e faz a projeção condicional período a período. Com p = 12, isso afetaria a etapa 2. Ainda não testamos; precisa ser verificado antes da avaliação fora da amostra.</li>
+  <li><b>Bloco externo:</b> ainda falta confirmar que o <code>foreign</code> impõe A<sub>xz</sub> = 0, como pede a seção 3.3 do plano.</li>
+  <li><b>Ajuste de COVID:</b> ainda não está no modelo (<code>hyper_covid = NULL</code>).</li>
+</ol>
+
+<p class="small" style="margin-top:14pt">Reprodutibilidade: os scripts dos testes (reconstrução dos dados a partir do script de extração, sem alterá-lo; busca da moda; perfil da nota; reprodução da cadeia; amostrador corrigido) estão com o Dudu.</p>
+
+</body>
+</html>

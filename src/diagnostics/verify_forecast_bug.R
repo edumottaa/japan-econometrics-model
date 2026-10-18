@@ -1,6 +1,10 @@
 .libPaths(c("C:/Users/dudup/AppData/Local/R/win-library/4.6",.libPaths()))
 suppressPackageStartupMessages(library(fpp3))
 suppressPackageStartupMessages(library(bsvarSIGNs))
+library(fabletools)
+library(distributional)
+library(purrr)
+
 setwd("C:/Users/dudup/OneDrive/NT Macro/work/psi_diagnostic")
 post<-readRDS("holdout_original_post.rds")
 d<-readRDS("holdout_diagnostic_data.rds")
@@ -14,7 +18,7 @@ pzero$posterior$Sigma<-post$posterior$Sigma*1e-18
 last<-ncol(pzero$last_draw$data_matrices$X)
 pzero$last_draw$data_matrices$X[,last]<-x0
 set.seed(789)
-zero_native<-bsvarSIGNs::forecast(pzero,horizon=h)$forecasts[6,,]
+zero_native<-forecast(pzero,horizon=h)$forecasts[6,,]
 frozen<-matrix(NA_real_,h,S)
 for(s in seq_len(S)){
  x<-x0; A<-post$posterior$A[,,s]
@@ -36,7 +40,7 @@ for(s in seq_len(S)){
  syn$posterior$A[,seq_len(n),s]<-diag(1.5,n)
  syn$posterior$A[,n+seq_len(n),s]<-diag(-.6,n)
 }
-fsyn<-bsvarSIGNs::forecast(syn,horizon=h)$forecasts[6,,]
+fsyn<-forecast(syn,horizon=h)$forecasts[6,,]
 ar2correct<-numeric(h); a<-d$train[m,6]; b<-d$train[m-1,6]
 for(j in seq_len(h)){new<-1.5*a-.6*b;ar2correct[j]<-new;b<-a;a<-new}
 cat("TRUE ROOT MODULUS",sqrt(.6),"\n")
@@ -57,7 +61,7 @@ for(seed in c(123,456,789)){
  }
  samples<-forecasts[6,,]
  fc<-rowMeans(samples)
- rows[[as.character(seed)]]<-data.frame(seed=seed,RMSE=sqrt(mean((actual-fc)^2)),MAE=mean(abs(actual-fc)),CRPS=mean(vapply(seq_len(h),function(j)fabletools::CRPS(distributional::dist_sample(list(samples[j,])),actual[j]),numeric(1))),min=min(samples),max=max(samples))
+ rows[[as.character(seed)]]<-data.frame(seed=seed,RMSE=sqrt(mean((actual-fc)^2)),MAE=mean(abs(actual-fc)),CRPS=mean(vapply(seq_len(h),function(j)CRPS(dist_sample(list(samples[j,])),actual[j]),numeric(1))),min=min(samples),max=max(samples))
  all_samples[[as.character(seed)]]<-forecasts
 }
 results<-do.call(rbind,rows);print(results)
@@ -67,10 +71,10 @@ cat("BENCHMARK REPRODUCTION\n")
 base<-as_tibble(rbind(d$train,d$test))|>mutate(date=d$dates)|>as_tsibble(index=date)
 train<-head(base,m)
 fit<-train|>model(ar=ARIMA(cpi_core~pdq(d=1,q=0)+PDQ(D=0,Q=0)),naive=NAIVE(cpi_core),drift=RW(cpi_core~drift()))
-print(fit|>fabletools::forecast(h=h)|>accuracy(base,measures=list(RMSE=RMSE,MAE=MAE,CRPS=CRPS)))
+print(fit|>forecast(h=h)|>accuracy(base,measures=list(RMSE=RMSE,MAE=MAE,CRPS=CRPS)))
 fitv<-train|>model(var=VAR(vars(atividade,cpi_core,juro_curto)))
-fv<-fabletools::forecast(fitv,h=h)
-pr<-distributional::parameters(fv$.distribution)
-fvc<-tibble(.model="var",date=tail(d$dates,h),cpi_core=distributional::dist_normal(purrr::map_dbl(pr$mu,2),sqrt(purrr::map_dbl(pr$sigma,~.x[2,2]))))|>as_tsibble(key=.model,index=date)|>as_fable(response="cpi_core",distribution="cpi_core")
+fv<-forecast(fitv,h=h)
+pr<-parameters(fv$.distribution)
+fvc<-tibble(.model="var",date=tail(d$dates,h),cpi_core=dist_normal(map_dbl(pr$mu,2),sqrt(map_dbl(pr$sigma,~.x[2,2]))))|>as_tsibble(key=.model,index=date)|>as_fable(response="cpi_core",distribution="cpi_core")
 print(fvc|>accuracy(base,measures=list(RMSE=RMSE,MAE=MAE,CRPS=CRPS)))
 cat("DONE\n")

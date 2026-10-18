@@ -1,0 +1,39 @@
+bsvarSIGNs-package      Bayesian Estimation of Structural Vector
+                        Autoregressions Identified by Sign, Zero, and
+                        Narrative Restrictions
+compute_conditional_sd.PosteriorBSVARSIGN
+                        Computes posterior draws of structural shock
+                        conditional standard deviations
+compute_fitted_values.PosteriorBSVARSIGN
+                        Computes posterior draws from data predictive
+                        density
+compute_historical_decompositions.PosteriorBSVARSIGN
+                        Computes posterior draws of historical
+                        decompositions
+compute_impulse_responses.PosteriorBSVARSIGN
+                        Computes posterior draws of impulse responses
+compute_structural_shocks.PosteriorBSVARSIGN
+                        Computes posterior draws of structural shocks
+compute_variance_decompositions.PosteriorBSVARSIGN
+                        Computes posterior draws of the forecast error
+                        variance decomposition
+estimate.BSVARSIGN      Bayesian estimation of a Structural Vector
+                        Autoregression with traditional and narrative
+                        sign restrictions via Gibbs sampler
+forecast.PosteriorBSVARSIGN
+                        Forecasting using Structural Vector
+                        Autoregression
+monetary                A 6-variable US monetary policy data, from 1965
+                        Jan to 2007 Aug
+optimism                A 5-variable US business cycle data, from 1955
+                        Q1 to 2004 Q4
+specify_bsvarSIGN       R6 Class representing the specification of the
+                        BSVARSIGN model
+specify_forecasts       R6 Class Representing Forecasts
+specify_identification_bsvarSIGN
+                        R6 Class Representing IdentificationBSVARSIGN
+specify_narrative       vector specifying one narrative restriction
+specify_posterior_bsvarSIGN
+                        R6 Class Representing PosteriorBSVARSIGN
+specify_prior_bsvarSIGN
+                        R6 Class Representing PriorBSVAR

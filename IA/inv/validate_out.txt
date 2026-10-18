@@ -1,0 +1,50 @@
+time sections 5-8: 82 s
+acceptance rate: 0.266 
+                      5%       50%       95%
+mu                0.0148    0.0418    0.1079
+delta             0.0366    0.0873    0.1804
+lambda            0.3841    0.4414    0.5195
+psi_ust2y         0.2683    0.4476    0.7037
+psi_ip_mundial    5.4389    8.5270   13.0761
+psi_brent       669.1193 1071.0886 1674.2562
+psi_vix        1687.2101 2733.0964 4377.3659
+psi_atividade    25.0091   38.3829   54.7532
+psi_cpi_core      0.7016    1.3121    2.0453
+psi_juro_curto    0.0130    0.0232    0.0402
+psi_inclinacao    0.0411    0.0655    0.1014
+psi_usdjpy       52.7385   83.0614  124.6779
+psi_topix       143.1396  213.5468  326.7221
+mean of 1st vs 2nd half of kept draws (mu, delta, lambda):
+           mu  delta lambda
+first  0.0490 0.0980 0.4434
+second 0.0495 0.0926 0.4474
+ var1  var2  var3  var4  var5  var6  var7  var8  var9 var10 var11 var12 var13 
+  212   191   228   274   313   247   260   278   266   247   256   252   261 
+posterior draws: 1000 | any NA in B: FALSE | all Sigma positive definite: TRUE 
+
+package formula (estimate) not positive definite for 25 of 1000 hyperparameter draws
+
+cross-check at default hyperparameters (package estimate vs our draw):
+                  [,1]   [,2]    [,3]     [,4]   [,5]   [,6]   [,7]   [,8]
+sigma_diag_pkg  0.0273 0.7423 76.4135 250.8549 1.5682 0.0597 0.0023 0.0033
+sigma_diag_ours 0.0275 0.7485 76.9821 250.5828 1.5731 0.0589 0.0023 0.0033
+                  [,9]   [,10]
+sigma_diag_pkg  4.1391 17.1252
+sigma_diag_ours 4.1301 17.0917
+own first-lag coefficient, package: 1.194 1.008 1.062 0.91 0.956 1.066 1.478 0.962 1.164 1.017 
+own first-lag coefficient, ours:    1.201 1.013 1.055 0.916 0.957 1.063 1.478 0.969 1.161 1.018 
+max abs difference in mean coefficients: 4.94 
+
+forecast(): h=1 mean minus fitted y_T (A X_T): 0 
+forecast(): h=1 mean minus correct forecast (A x0): 12.1 
+forecast(): h=2 mean minus 'replace lag 1 only': 0 
+forecast(): h=2 mean minus 'shift all lags': 12.9 
+
+last observation vs our 1-step-ahead median:
+          ust2y ip_mundial brent    vix atividade cpi_core juro_curto
+last       4.22     468.96 442.8 283.85    479.25   473.27       0.98
+h1_median  4.31     469.04 444.2 286.98    479.54   473.36       1.04
+          inclinacao usdjpy  topix
+last            1.32 508.96 555.66
+h1_median       1.35 508.93 556.58
+fan chart saved

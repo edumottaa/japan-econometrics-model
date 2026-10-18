@@ -1,0 +1,34 @@
+valid points: GPT minus package log posterior, max abs diff: 5.55e-07 
+trapped point: package = 9999993829 | GPT = -5541.97 
+
+--- GPT sampler, no COVID ( 201 s ) ---
+Taxa de movimentos aceitos: 24.4 %
+Menor tamanho efetivo de amostra: 220 
+                      5%       50%       95% mine_median
+mu                0.0143    0.0430    0.1132      0.0432
+delta             0.0416    0.0947    0.1918      0.0896
+lambda            0.3841    0.4452    0.5155      0.4466
+psi_ust2y         0.2729    0.4529    0.6937      0.4397
+psi_ip_mundial    5.3126    8.4660   12.7515      8.4624
+psi_brent       689.7634 1095.1127 1695.3241   1079.0704
+psi_vix        1649.4430 2601.0458 4225.5144   2621.9280
+psi_atividade    24.5269   36.6164   54.1496     37.2347
+psi_cpi_core      0.7471    1.3007    2.1393      1.2770
+psi_juro_curto    0.0134    0.0232    0.0384      0.0229
+psi_inclinacao    0.0408    0.0632    0.0966      0.0644
+psi_usdjpy       51.7911   81.4923  124.2378     83.7215
+psi_topix       136.1158  220.0318  331.1221    216.1322
+
+--- GPT sampler, with COVID ( 258 s ) ---
+Taxa de movimentos aceitos: 24.7 %
+Menor tamanho efetivo de amostra: 159 
+             5%    50%     95%
+mu       0.0148 0.0455  0.1158
+delta    0.0482 0.1078  0.2003
+lambda   0.3401 0.3940  0.4621
+s0_mar20 2.5532 3.5200  5.3976
+s1_apr20 4.9264 6.7785 10.3759
+s2_may20 4.0800 5.7046  8.2915
+rho      0.3253 0.4383  0.5647
+
+estimate(spec, S = 200) after its hyperparameters: ran; ESS = NaN 

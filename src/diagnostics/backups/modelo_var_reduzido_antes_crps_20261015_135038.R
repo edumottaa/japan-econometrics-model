@@ -1,13 +1,18 @@
-library(tidyverse)
-library(ggplot2)
-library(dplyr)
-library(fpp3)
-library(bsvarSIGNs)
 
 
 
 
 # 4 Initial VAR benchmark ( e sua seleção de lag)
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(fpp3)
+library(bsvarSIGNs)
+library(bsvars)
+library(distributional)
+library(fabletools)
+
 lag_selection <- data_bal |>
   model(
     aicc = VAR(vars(atividade,cpi_core, juro_curto)),
@@ -165,15 +170,15 @@ for (i in seq_along(janelas)) {
 #Estimação e previsão do BVAR reduzido
   
   # Estimação com os hiperparâmetros padrão do pacote
-  spec_cv <- bsvarSIGNs::specify_bsvarSIGN$new(               
+  spec_cv <- specify_bsvarSIGN$new(               
     data = dados_treino,
     p = 12
   )
   
-  post_cv <- bsvars::estimate(spec_cv, S = 200)
+  post_cv <- estimate(spec_cv, S = 200)
   
   # Previsão pela função do pacote
-  previsao_cv <- bsvarSIGNs::forecast(post_cv, horizon = 12)
+  previsao_cv <- forecast(post_cv, horizon = 12)
   
   # Selecionar os sorteios referentes ao CPI
   pos_cpi <- match("cpi_core", colnames(dados_treino))
@@ -193,13 +198,13 @@ for (i in seq_along(janelas)) {
 
 previsoes_bvar <- bind_rows(resultados_bvar) |>
   mutate(
-    cpi_core = distributional::dist_sample(sorteios),
+    cpi_core = dist_sample(sorteios),
     .mean = mean(cpi_core)
   ) |>
   select(-sorteios) |>
   filter(date <= max(data_bal$date)) |>
   as_tsibble(key = c(.id, .model), index = date) |>
-  fabletools::as_fable(
+  as_fable(
     response = "cpi_core",
     distribution = "cpi_core"
   )
@@ -268,14 +273,14 @@ fit_fable <- treino |>
   )
 
 prev_fable <- fit_fable |>
-  fabletools::forecast(h = h)
+  forecast(h = h)
 
 # VAR benchmark
 fit_var <- treino |>
   model(var = VAR(vars(atividade, cpi_core, juro_curto)))
 
 prev_var <- fit_var |>
-  fabletools::forecast(h = h)
+  forecast(h = h)
 
 
 
@@ -290,15 +295,15 @@ dados_treino <- treino |>
   ) |>
   as.matrix()
 
-spec_holdout <- bsvarSIGNs::specify_bsvarSIGN$new(
+spec_holdout <- specify_bsvarSIGN$new(
   data = dados_treino,
   p = 12
 )
 
 set.seed(123)
-post_holdout <- bsvars::estimate(spec_holdout, S = 200)
+post_holdout <- estimate(spec_holdout, S = 200)
 
-prev_bvar <- bsvarSIGNs::forecast(post_holdout, horizon = h)
+prev_bvar <- forecast(post_holdout, horizon = h)
 
 # Selecionar os sorteios de CPI
 pos_cpi <- match("cpi_core", colnames(dados_treino))
@@ -308,7 +313,7 @@ sorteios_cpi <- prev_bvar$forecasts[pos_cpi, , ]
 prev_bvar_cpi <- tibble(
   .model = "BVAR",
   date = teste$date,
-  cpi_core = distributional::dist_sample(asplit(sorteios_cpi, 1))
+  cpi_core = dist_sample(asplit(sorteios_cpi, 1))
 ) |>
   as_tsibble(key = .model, index = date) |>
   as_fable(response = "cpi_core", distribution = "cpi_core")
