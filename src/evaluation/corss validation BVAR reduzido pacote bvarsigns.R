@@ -1,4 +1,4 @@
-# 9. Validação temporal: comparar BVAR, VAR e modelos univariados
+# 9. Validação temporal: BVAR exógeno COVID (bsvarSIGNs), VAR e univariados
 #TODO: outras métricas do plano
 
 
@@ -7,7 +7,15 @@ library(tidyverse)
 library(fpp3)
 library(fabletools)
 library(distributional)
-library(BVAR)
+library(bsvars)
+library(bsvarSIGNs)
+
+# Mesmo calendário do CV original; previsões mensais até 24 meses.
+p <- 6
+h <- 24
+stopifnot("Use o bsvarSIGNs 3.0 da biblioteca padrão do R." =
+            as.character(packageVersion("bsvarSIGNs")) == "3.0")
+# Correção das defasagens em R no bloco 9.3.2; pacote oficial sem modificações.
 
 # Usar a amostra comum data_bal, preparada no feature_engineering.R.
 
@@ -31,7 +39,7 @@ cv_fable <- cv_data |>
 
 # Calcular e guardar as métricas dos modelos univariados
 acc_fable <- cv_fable |>
-  forecast(h = 12) |>
+  forecast(h = h) |>
   accuracy(data_bal, measures = list(RMSE = RMSE, MAE = MAE, CRPS = CRPS))
 
 
@@ -45,7 +53,7 @@ cv_fable_atividade <- cv_data |>
   )
 
 acc_fable_atividade <- cv_fable_atividade |>
-  forecast(h = 12) |>
+  forecast(h = h) |>
   accuracy(data_bal, measures = list(RMSE = RMSE, MAE = MAE, CRPS = CRPS))
 
 # 9.2. VAR de referência com atividade, CPI e juro curto
@@ -56,7 +64,7 @@ cv_var <- cv_data |>
 
 # Prever o VAR uma única vez
 previsoes_var <- cv_var |>
-  forecast(h = 12) |>
+  forecast(h = h) |>
   filter(date <= max(data_bal$date))
 
 # RMSE e MAE: calcular diretamente e selecionar o CPI
@@ -103,32 +111,14 @@ previsoes_var_atividade <- tibble(
 acc_var_atividade <- previsoes_var_atividade |>
   accuracy(data_bal, measures = list(RMSE = RMSE, MAE = MAE, CRPS = CRPS))
 
-# 9.3. Validação temporal dos dois BVARs
-# Reestimar cada modelo somente com os dados disponíveis na janela.
-# Estimar lambda, SOC e SUR no treino; psi automático e fixo na estimação.
-# Cada janela usa uma estimação compartilhada pelas duas previsões.
-
-priors_cv <- bv_priors(
-  hyper = c("lambda", "soc", "sur"),
-  mn = bv_minnesota(lambda = bv_lambda(), psi = bv_psi()),
-  soc = bv_soc(),
-  sur = bv_sur(min = 0.001)
-)
-
-mh_cv <- bv_mh(
-  adjust_acc = TRUE,
-  acc_lower = 0.2,
-  acc_upper = 0.4,
-  acc_change = 0.1
-)
+# 9.3. Validação temporal do BVAR exógeno com COVID
+# Reestimar no treino; lambda/mu/delta/psi fixos e apenas os quatro parâmetros COVID estimados.
 
 set.seed(123)
 
 janelas <- unique(cv_data$.id)
 resultados_bvar <- vector("list", length(janelas))
-resultados_bvar_condicionado <- vector("list", length(janelas))
 resultados_bvar_atividade <- vector("list", length(janelas))
-resultados_bvar_condicionado_atividade <- vector("list", length(janelas))
 
 for (i in seq_along(janelas)) {
 
@@ -147,89 +137,77 @@ for (i in seq_along(janelas)) {
     select(
       ust2y, ip_mundial, brent, vix,
       atividade, cpi_core, juro_curto,
-      inclinacao, usdjpy, topix
+      inclinacao, usdjpy
     ) |>
     as.matrix()
 
   pos_cpi <- match("cpi_core", colnames(dados_treino))
   pos_atividade <- match("atividade", colnames(dados_treino))
 
-  # 9.3.2. Estimar o BVAR uma vez e prever sem condicionamento
-  post_cv <- bvar(
-    dados_treino, lags = 6, n_draw = 5000,
-    n_burn = 2500, n_thin = 1, priors = priors_cv, mh = mh_cv
+  # 9.3.2. Estimar o BVAR exógeno com COVID, como no script do modelo
+  matrix_externa <- dados_treino[, 1:4, drop = FALSE]
+  matrix_interna <- dados_treino[, 5:9, drop = FALSE]
+
+  inicio_covid <- match(as.Date("2020-03-01"), as.Date(treino$date)) - p
+  if (is.na(inicio_covid) || inicio_covid <= 0) inicio_covid <- NULL
+  # Esperar quatro meses observados para estimar o perfil COVID de quatro parâmetros.
+  if (!is.null(inicio_covid) && nrow(treino) - p - inicio_covid + 1L < 4L) inicio_covid <- NULL
+
+  set.seed(123 + i)
+  spec_cv <- bsvarSIGNs::specify_bsvarSIGN$new(
+    data = matrix_interna,
+    foreign = matrix_externa,
+    p = p,
+    hyper_mu = FALSE,
+    hyper_delta = FALSE,
+    hyper_lambda = FALSE,
+    hyper_psi = FALSE,
+    hyper_covid = inicio_covid,
+    sign_structural = matrix(NA_real_, 9, 9)
   )
+  if (!is.null(inicio_covid)) spec_cv$estimate_hyper(S = 5000, burn_in = 2500)
+  post_cv <- bsvars::estimate(spec_cv, S = 2500, show_progress = FALSE)
 
   set.seed(123)
-  previsao_cv <- predict(post_cv, horizon = 12)
-  sorteios_cpi <- t(previsao_cv$fcast[, , pos_cpi])
+  previsao_cv <- bsvarSIGNs::forecast(post_cv, horizon = h)
+
+  # Correção em R: manter os choques nativos, iniciar no último dado e deslocar os lags.
+  # Sem regressores exógenos adicionais; a escala COVID dos choques vem do pacote.
+  choques_cv <- previsao_cv$forecasts - previsao_cv$forecast_mean
+  stopifnot(all(is.finite(choques_cv)))
+  estado_inicial_cv <- c(t(dados_treino[nrow(dados_treino) - (0:(p - 1)), , drop = FALSE]), 1)
+  for (s in seq_len(dim(previsao_cv$forecasts)[3])) {
+    estado_cv <- estado_inicial_cv
+    for (j in seq_len(h)) {
+      previsao_cv$forecast_mean[, j, s] <- drop(post_cv$posterior$A[, , s] %*% estado_cv)
+      previsao_cv$forecasts[, j, s] <- previsao_cv$forecast_mean[, j, s] + choques_cv[, j, s]
+      estado_cv <- c(previsao_cv$forecasts[, j, s], head(estado_cv, ncol(dados_treino) * (p - 1)), 1)
+    }
+  }
+  # forecasts: variáveis (externas primeiro) x horizontes x sorteios.
+  sorteios_cpi <- matrix(previsao_cv$forecasts[pos_cpi, , ], nrow = h)
 
   resultados_bvar[[i]] <- tibble(
     .id = janelas[i],
-    .model = "BVAR",
-    date = origem + seq_len(12),
-    h = seq_len(12),
+    .model = "BVAR exógeno COVID",
+    date = origem + seq_len(h),
+    h = seq_len(h),
     sorteios = split(sorteios_cpi, row(sorteios_cpi))
   )
 
-  # Avaliar a atividade usando os mesmos sorteios do BVAR.
-  sorteios_atividade <- t(previsao_cv$fcast[, , pos_atividade])
+  # Avaliar a atividade usando os mesmos sorteios do BVAR exógeno.
+  sorteios_atividade <- matrix(previsao_cv$forecasts[pos_atividade, , ], nrow = h)
   resultados_bvar_atividade[[i]] <- tibble(
     .id = janelas[i],
-    .model = "BVAR",
-    date = origem + seq_len(12),
-    h = seq_len(12),
-    sorteios = split(sorteios_atividade, row(sorteios_atividade))
-  )
-
-  # 9.3.3. Prever o mesmo BVAR condicionado ao VAR externo
-  # Selecionar os lags por AICc somente no treino desta janela.
-  # Não usar o var_ex da amostra completa nem os valores externos realizados no teste.
-  previsoes_externas_cv <- treino |>
-    select(-.id) |>
-    as_tsibble(index = date) |>
-    model(aicc = VAR(vars(ip_mundial, brent, vix, ust2y))) |>
-    forecast(h = 12)
-
-  caminhos_externos_cv <- previsoes_externas_cv |>
-    as_tibble() |>
-    arrange(date) |>
-    pull(.mean)
-
-  # As trajetórias médias são tratadas como fixas: não propagam a incerteza do VAR externo.
-  set.seed(123)
-  previsao_condicionada_cv <- predict(
-    post_cv,
-    horizon = 12,
-    cond_path = caminhos_externos_cv,
-    cond_vars = colnames(caminhos_externos_cv)
-  )
-
-  # fcast: sorteios x horizontes x variáveis.
-  sorteios_cpi <- t(previsao_condicionada_cv$fcast[, , pos_cpi])
-  resultados_bvar_condicionado[[i]] <- tibble(
-    .id = janelas[i],
-    .model = "BVAR condicionado",
-    date = origem + seq_len(12),
-    h = seq_len(12),
-    sorteios = split(sorteios_cpi, row(sorteios_cpi))
-  )
-  # Mesma extração para a atividade na previsão condicionada.
-  sorteios_atividade <- t(previsao_condicionada_cv$fcast[, , pos_atividade])
-  resultados_bvar_condicionado_atividade[[i]] <- tibble(
-    .id = janelas[i],
-    .model = "BVAR condicionado",
-    date = origem + seq_len(12),
-    h = seq_len(12),
+    .model = "BVAR exógeno COVID",
+    date = origem + seq_len(h),
+    h = seq_len(h),
     sorteios = split(sorteios_atividade, row(sorteios_atividade))
   )
 }
 
-# 9.3.4. Adaptar as distribuições marginais do CPI para accuracy()
-previsoes_bvar <- bind_rows(
-  bind_rows(resultados_bvar),
-  bind_rows(resultados_bvar_condicionado)
-) |>
+# 9.3.3. Adaptar as distribuições marginais do CPI para accuracy()
+previsoes_bvar <- bind_rows(resultados_bvar) |>
   mutate(
     cpi_core = dist_sample(sorteios),
     .mean = mean(cpi_core)
@@ -244,10 +222,7 @@ acc_bvar <- previsoes_bvar |>
 
 
 # Adaptar também as distribuições marginais da atividade.
-previsoes_bvar_atividade <- bind_rows(
-  bind_rows(resultados_bvar_atividade),
-  bind_rows(resultados_bvar_condicionado_atividade)
-) |>
+previsoes_bvar_atividade <- bind_rows(resultados_bvar_atividade) |>
   mutate(
     atividade = dist_sample(sorteios),
     .mean = mean(atividade)
