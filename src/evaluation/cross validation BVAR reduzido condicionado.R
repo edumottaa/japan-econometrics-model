@@ -248,7 +248,7 @@ cv_results
 
 
 cv_results |>
-  select(.model, RMSE, MAE, CRPS) |>
+  select(.model, RMSE, CRPS) |>
   pivot_longer(-.model, names_to = "metrica", values_to = "valor") |>
   ggplot(aes(x = .model, y = valor, fill = .model)) +
   geom_col(na.rm = TRUE) +
@@ -272,7 +272,7 @@ cv_results_atividade <- bind_rows(
 cv_results_atividade
 
 cv_results_atividade |>
-  select(.model, RMSE, MAE, CRPS) |>
+  select(.model, RMSE, CRPS) |>
   pivot_longer(-.model, names_to = "metrica", values_to = "valor") |>
   ggplot(aes(x = .model, y = valor, fill = .model)) +
   geom_col(na.rm = TRUE) +

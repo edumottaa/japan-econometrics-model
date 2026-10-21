@@ -1,4 +1,4 @@
-# 9. Validação temporal: BVAR exógeno COVID (bsvarSIGNs), VAR e univariados
+# Validação temporal: bvar reduzido (bsvarSIGNs), VAR e univariados
 #TODO: outras métricas do plano
 
 
@@ -10,14 +10,11 @@ library(distributional)
 library(bsvars)
 library(bsvarSIGNs)
 
-# Mesmo calendário do CV original; previsões mensais até 24 meses.
+# previsões mensais até 24 meses.
 p <- 6
 h <- 24
 stopifnot("Use o bsvarSIGNs 3.0 da biblioteca padrão do R." =
             as.character(packageVersion("bsvarSIGNs")) == "3.0")
-# Correção das defasagens em R no bloco 9.3.2; pacote oficial sem modificações.
-
-# Usar a amostra comum data_bal, preparada no feature_engineering.R.
 
 # Lacunas internas alterariam o significado das defasagens e das datas previstas.
 if (any(tsibble::has_gaps(data_bal)$.gaps)) {
@@ -25,10 +22,10 @@ if (any(tsibble::has_gaps(data_bal)$.gaps)) {
 }
 
 cv_data <- data_bal |>
-  stretch_tsibble(.init = 180, .step = 3)   # Primeira janela: 180 observações completas. (2000 até 2014)
+  stretch_tsibble(.init = 180, .step = 1)   # Primeira janela: 180 observações completas. (2000 até 2014)
                                             # Avançar três meses por janela para reduzir o tempo de estimação.
 
-# 9.1. Modelos univariados de referência para o CPI
+#1. Modelos univariados de referência para o CPI
 cv_fable <- cv_data |>
   model(
     ar    = ARIMA(cpi_core ~ pdq(d = 1, q = 0) + PDQ(D = 0, Q = 0)),
@@ -56,7 +53,7 @@ acc_fable_atividade <- cv_fable_atividade |>
   forecast(h = h) |>
   accuracy(data_bal, measures = list(RMSE = RMSE, MAE = MAE, CRPS = CRPS))
 
-# 9.2. VAR de referência com atividade, CPI e juro curto
+#2. VAR de referência com atividade, CPI e juro curto
 cv_var <- cv_data |>
   model(var = VAR(vars(atividade, cpi_core, juro_curto)))
 
@@ -111,7 +108,12 @@ previsoes_var_atividade <- tibble(
 acc_var_atividade <- previsoes_var_atividade |>
   accuracy(data_bal, measures = list(RMSE = RMSE, MAE = MAE, CRPS = CRPS))
 
-# 9.3. Validação temporal do BVAR exógeno com COVID
+# Previsões já existentes: impedir que uma execução repetida reinicie o BVAR.
+if (exists("previsoes_bvar", inherits = FALSE) && exists("previsoes_bvar_atividade", inherits = FALSE)) {
+  stop("O BVAR ja tem previsoes nesta sessao. Para comparar periodos, execute somente a secao 6 ou o arquivo resultados CV BVAR reduzido por periodo.R. Para um novo CV intencional, remova antes previsoes_bvar e previsoes_bvar_atividade.")
+}
+
+# 3. Validação temporal do BVAR reduzido
 # Reestimar no treino; lambda/mu/delta/psi fixos e apenas os quatro parâmetros COVID estimados.
 
 set.seed(123)
@@ -144,7 +146,7 @@ for (i in seq_along(janelas)) {
   pos_cpi <- match("cpi_core", colnames(dados_treino))
   pos_atividade <- match("atividade", colnames(dados_treino))
 
-  # 9.3.2. Estimar o BVAR exógeno com COVID, como no script do modelo
+  #3.2. Estimar o BVAR reduzido
   matrix_externa <- dados_treino[, 1:4, drop = FALSE]
   matrix_interna <- dados_treino[, 5:9, drop = FALSE]
 
@@ -189,7 +191,7 @@ for (i in seq_along(janelas)) {
 
   resultados_bvar[[i]] <- tibble(
     .id = janelas[i],
-    .model = "BVAR exógeno COVID",
+    .model = "bvar reduzido",
     date = origem + seq_len(h),
     h = seq_len(h),
     sorteios = split(sorteios_cpi, row(sorteios_cpi))
@@ -199,14 +201,14 @@ for (i in seq_along(janelas)) {
   sorteios_atividade <- matrix(previsao_cv$forecasts[pos_atividade, , ], nrow = h)
   resultados_bvar_atividade[[i]] <- tibble(
     .id = janelas[i],
-    .model = "BVAR exógeno COVID",
+    .model = "bvar reduzido",
     date = origem + seq_len(h),
     h = seq_len(h),
     sorteios = split(sorteios_atividade, row(sorteios_atividade))
   )
 }
 
-# 9.3.3. Adaptar as distribuições marginais do CPI para accuracy()
+#3.3. Adaptar as distribuições marginais do CPI para accuracy()
 previsoes_bvar <- bind_rows(resultados_bvar) |>
   mutate(
     cpi_core = dist_sample(sorteios),
@@ -235,7 +237,7 @@ previsoes_bvar_atividade <- bind_rows(resultados_bvar_atividade) |>
 acc_bvar_atividade <- previsoes_bvar_atividade |>
   accuracy(data_bal, measures = list(RMSE = RMSE, MAE = MAE, CRPS = CRPS))
 
-# 9.4. Comparar as métricas de previsão do CPI
+#4. Comparar as métricas de previsão do CPI
 cv_results <- bind_rows(
   acc_fable,
   acc_var,
@@ -250,20 +252,37 @@ cv_results
 
 
 
-cv_results |>
-  select(.model, RMSE, MAE, CRPS) |>
+grafico_cv_cpi <- cv_results |>
+  select(.model, RMSE, CRPS) |>
   pivot_longer(-.model, names_to = "metrica", values_to = "valor") |>
-  ggplot(aes(x = .model, y = valor, fill = .model)) +
-  geom_col(na.rm = TRUE) +
-  facet_wrap(~ metrica, scales = "free_y") +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  labs(
-    title = "CV do CPI — menor é melhor",
-    x = NULL, y = NULL
-  )
+  mutate(
+    .model = recode(.model, "bvar reduzido" = "BVAR reduzido", "BVAR exógeno COVID" = "BVAR reduzido",
+                    ar = "AR", naive = "Naive", drift = "Drift", var = "VAR"),
+    .model = factor(.model, levels = c("VAR", "Drift", "Naive", "AR", "BVAR reduzido")),
+    metrica = factor(metrica, levels = c("RMSE", "CRPS"))
+  ) |>
+  ggplot(aes(x = valor, y = .model, fill = .model)) +
+  geom_col(width = 0.62, na.rm = TRUE) +
+  geom_text(aes(label = formatC(valor, format = "f", digits = 2, decimal.mark = ","),
+                fontface = if_else(.model == "BVAR reduzido", "bold", "plain")),
+            hjust = -0.15, size = 3.8, colour = "#263747", show.legend = FALSE) +
+  facet_wrap(vars(metrica), ncol = 2, scales = "free_x") +
+  scale_fill_manual(values = c("BVAR reduzido" = "#D96830", "AR" = "#355C7D",
+                               "Naive" = "#668BA8", "Drift" = "#92AEC4", "VAR" = "#B9CAD8")) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.22))) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none", panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(), panel.grid.major.x = element_line(colour = "#E8EDF2"),
+        axis.text.y = element_text(colour = "#263747"), strip.text = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", size = 17),
+        plot.margin = margin(12, 20, 12, 12)) +
+  labs(title = "Validação temporal · CPI core", subtitle = "Horizontes de 1 a 24 meses reunidos · Menor é melhor",
+       x = NULL, y = NULL)
+print(grafico_cv_cpi)
+ggsave("C:/Users/dudup/OneDrive/japan-econometrics-model/src/Outputs/CV bvar reduzido - CPI.png",
+       plot = grafico_cv_cpi, width = 11, height = 4.8, dpi = 180, bg = "white")
 
-# 9.5. Comparar as métricas de previsão da atividade
+# 5. Comparar as métricas de previsão da atividade
 cv_results_atividade <- bind_rows(
   acc_fable_atividade,
   acc_var_atividade,
@@ -274,15 +293,128 @@ cv_results_atividade <- bind_rows(
 
 cv_results_atividade
 
-cv_results_atividade |>
-  select(.model, RMSE, MAE, CRPS) |>
+grafico_cv_atividade <- cv_results_atividade |>
+  select(.model, RMSE, CRPS) |>
   pivot_longer(-.model, names_to = "metrica", values_to = "valor") |>
-  ggplot(aes(x = .model, y = valor, fill = .model)) +
-  geom_col(na.rm = TRUE) +
-  facet_wrap(~ metrica, scales = "free_y") +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  labs(
-    title = "CV da atividade — menor é melhor",
-    x = NULL, y = NULL
-  )
+  mutate(
+    .model = recode(.model, "bvar reduzido" = "BVAR reduzido", "BVAR exógeno COVID" = "BVAR reduzido",
+                    ar = "AR", naive = "Naive", drift = "Drift", var = "VAR"),
+    .model = factor(.model, levels = c("VAR", "Drift", "Naive", "AR", "BVAR reduzido")),
+    metrica = factor(metrica, levels = c("RMSE", "CRPS"))
+  ) |>
+  ggplot(aes(x = valor, y = .model, fill = .model)) +
+  geom_col(width = 0.62, na.rm = TRUE) +
+  geom_text(aes(label = formatC(valor, format = "f", digits = 2, decimal.mark = ","),
+                fontface = if_else(.model == "BVAR reduzido", "bold", "plain")),
+            hjust = -0.15, size = 3.8, colour = "#263747", show.legend = FALSE) +
+  facet_wrap(vars(metrica), ncol = 2, scales = "free_x") +
+  scale_fill_manual(values = c("BVAR reduzido" = "#D96830", "AR" = "#355C7D",
+                               "Naive" = "#668BA8", "Drift" = "#92AEC4", "VAR" = "#B9CAD8")) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.22))) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none", panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(), panel.grid.major.x = element_line(colour = "#E8EDF2"),
+        axis.text.y = element_text(colour = "#263747"), strip.text = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", size = 17),
+        plot.margin = margin(12, 20, 12, 12)) +
+  labs(title = "Validação temporal · Atividade", subtitle = "Horizontes de 1 a 24 meses reunidos · Menor é melhor",
+       x = NULL, y = NULL)
+print(grafico_cv_atividade)
+ggsave("C:/Users/dudup/OneDrive/japan-econometrics-model/src/Outputs/CV bvar reduzido - atividade.png",
+       plot = grafico_cv_atividade, width = 11, height = 4.8, dpi = 180, bg = "white")
+
+# 6. Comparar por período da DATA PREVISTA: 2015-2019, 2020-2021 e 2022 em diante.
+# Com o CV concluído na sessão, executar somente daqui até o final, sem reestimar.
+# Recalcular apenas as previsões dos univariados já ajustados; não executar model().
+previsoes_fable_periodos <- forecast(cv_fable, h = 24)
+previsoes_fable_atividade_periodos <- forecast(cv_fable_atividade, h = 24)
+
+# Reunir as distribuições marginais dos cinco modelos e dos dois alvos.
+previsoes_periodos <- bind_rows(
+  previsoes_fable_periodos |> as_tibble() |>
+    transmute(.id, .model, date, variavel = "cpi_core", valor = unname(cpi_core)),
+  previsoes_var_cpi |> as_tibble() |>
+    transmute(.id, .model, date, variavel = "cpi_core", valor = unname(cpi_core)),
+  previsoes_bvar |> as_tibble() |>
+    transmute(.id, .model, date, variavel = "cpi_core", valor = unname(cpi_core)),
+  previsoes_fable_atividade_periodos |> as_tibble() |>
+    transmute(.id, .model, date, variavel = "atividade", valor = unname(atividade)),
+  previsoes_var_atividade |> as_tibble() |>
+    transmute(.id, .model, date, variavel = "atividade", valor = unname(atividade)),
+  previsoes_bvar_atividade |> as_tibble() |>
+    transmute(.id, .model, date, variavel = "atividade", valor = unname(atividade))
+) |>
+  filter(date <= max(data_bal$date), year(date) >= 2015) |>
+  mutate(periodo = case_when(
+    year(date) <= 2019 ~ "2015-2019",
+    year(date) <= 2021 ~ "2020-2021",
+    TRUE ~ "2022 em diante"
+  ))
+
+# Exigir os mesmos pares janela/data nos cinco modelos; não comparar amostras diferentes.
+casos_comuns_periodos <- previsoes_periodos |>
+  count(variavel, .id, date, name = "n_modelos")
+stopifnot("Há casos ausentes ou duplicados entre os cinco modelos." =
+            all(casos_comuns_periodos$n_modelos == 5L))
+
+observados_periodos <- data_bal |>
+  as_tibble() |>
+  select(date, cpi_core, atividade) |>
+  pivot_longer(-date, names_to = "variavel", values_to = "valor") |>
+  as_tsibble(key = variavel, index = date)
+
+previsoes_periodos <- previsoes_periodos |>
+  as_tsibble(key = c(variavel, .id, .model), index = date) |>
+  as_fable(response = "valor", distribution = "valor")
+
+# Todos os horizontes observados de 1 a 24 meses, reunidos dentro de cada período.
+cv_resultados_periodos <- previsoes_periodos |>
+  accuracy(observados_periodos, by = c("variavel", "periodo", ".model"),
+           measures = list(RMSE = RMSE, MAE = MAE, CRPS = CRPS)) |>
+  select(variavel, periodo, .model, RMSE, MAE, CRPS) |>
+  arrange(variavel, periodo, RMSE)
+print(cv_resultados_periodos, n = Inf)
+
+# Contagens por modelo: uma observação é um par janela/data prevista.
+cv_casos_periodos <- previsoes_periodos |>
+  as_tibble() |>
+  count(variavel, periodo, .model, name = "casos")
+print(cv_casos_periodos, n = Inf)
+
+graficos_cv_periodos <- list()
+for (alvo in c("cpi_core", "atividade")) {
+  grafico_periodos <- cv_resultados_periodos |>
+    filter(variavel == alvo) |>
+    select(periodo, .model, RMSE, CRPS) |>
+    pivot_longer(c(RMSE, CRPS), names_to = "metrica", values_to = "erro") |>
+    mutate(
+      .model = recode(.model, "bvar reduzido" = "BVAR reduzido", "BVAR exógeno COVID" = "BVAR reduzido",
+                      ar = "AR", naive = "Naive", drift = "Drift", var = "VAR"),
+      .model = factor(.model, levels = c("VAR", "Drift", "Naive", "AR", "BVAR reduzido")),
+      metrica = factor(metrica, levels = c("RMSE", "CRPS")),
+      periodo = factor(periodo, levels = c("2015-2019", "2020-2021", "2022 em diante"))
+    ) |>
+    ggplot(aes(x = erro, y = .model, fill = .model)) +
+    geom_col(width = 0.62) +
+    geom_text(aes(label = formatC(erro, format = "f", digits = 2, decimal.mark = ","),
+                  fontface = if_else(.model == "BVAR reduzido", "bold", "plain")),
+              hjust = -0.15, size = 3.5, colour = "#263747", show.legend = FALSE) +
+    facet_wrap(vars(periodo, metrica), ncol = 2, scales = "free_x") +
+    scale_fill_manual(values = c("BVAR reduzido" = "#D96830", "AR" = "#355C7D",
+                                 "Naive" = "#668BA8", "Drift" = "#92AEC4", "VAR" = "#B9CAD8")) +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.25))) +
+    theme_minimal(base_size = 12) +
+    theme(legend.position = "none", panel.grid.major.y = element_blank(),
+          panel.grid.minor = element_blank(), panel.grid.major.x = element_line(colour = "#E8EDF2"),
+          axis.text.y = element_text(colour = "#263747"), strip.text = element_text(face = "bold"),
+          plot.title = element_text(face = "bold", size = 17),
+          plot.margin = margin(12, 20, 12, 12)) +
+    labs(title = paste("Validação por período ·", if (alvo == "cpi_core") "CPI core" else "Atividade"),
+         subtitle = "Data prevista · Horizontes de 1 a 24 meses reunidos · Menor é melhor",
+         x = NULL, y = NULL)
+  graficos_cv_periodos[[alvo]] <- grafico_periodos
+  print(grafico_periodos)
+  ggsave(paste0("C:/Users/dudup/OneDrive/japan-econometrics-model/src/Outputs/CV bvar reduzido - ",
+                if (alvo == "cpi_core") "CPI" else "atividade", " por periodo.png"),
+         plot = grafico_periodos, width = 11, height = 9, dpi = 180, bg = "white")
+}
