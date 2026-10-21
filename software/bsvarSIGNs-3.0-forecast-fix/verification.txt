@@ -1,3 +1,0 @@
-Estimation equal within 1e-10: TRUE
-AR2 H24: 0.0017587711664816
-Max AR2 error: 1.05726538635054e-11
