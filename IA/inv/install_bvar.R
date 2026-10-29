@@ -1,5 +1,0 @@
-options(repos = c(CRAN = "https://cloud.r-project.org"))
-install.packages("BVAR", quiet = TRUE)
-cat("BVAR installed:", requireNamespace("BVAR", quietly = TRUE), "version:", as.character(packageVersion("BVAR")), "\n")
-print(args(BVAR::bv_priors)); print(args(BVAR::bv_psi)); print(args(BVAR::bv_metropolis)); print(args(BVAR::bvar))
-b <- deparse(BVAR::bv_priors); cat(grep("hyper|full|auto", b, value = TRUE), sep = "\n")

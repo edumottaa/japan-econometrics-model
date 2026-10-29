@@ -1,0 +1,5 @@
+cenario,origem,h,sorteios,finitos,erro_condicoes
+Base,2026-08-01,24,2500,TRUE,0
+Benigno,2026-08-01,24,2500,TRUE,0
+Adverso,2026-08-01,24,2500,TRUE,0
+Adverso estrutural,2026-08-01,24,2500,TRUE,0

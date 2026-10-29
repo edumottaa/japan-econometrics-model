@@ -1,0 +1,97 @@
+date,cenario,ust2y,brent,atividade,cpi_core,juro_curto,inclinacao,usdjpy,fonte_ust2y,fonte_brent
+2026-09-01,Adverso,4.65,473.7600973168581,NA,473.44425216922303,1.226,1.1197368421052631,505.25446971734647,FRED: observado,FRED: observado
+2026-10-01,Adverso,NA,NA,NA,NA,NA,NA,NA,Livre no BVAR,Livre no BVAR
+2026-11-01,Adverso,4.6355,470.9530201312334,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Hipotese: US$ 111
+2026-12-01,Adverso,4.66334,480.9957349224733,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-01-01,Adverso,4.68962,483.5602082512813,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-02-01,Adverso,4.70921,482.0128429537588,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-03-01,Adverso,4.72624,479.80049760640134,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-04-01,Adverso,4.74507,478.4031910209829,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-05-01,Adverso,4.76233,476.91056733971544,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-06-01,Adverso,4.78015,475.3658814838616,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-07-01,Adverso,4.79741,474.0394632360423,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-08-01,Adverso,4.81524,472.7257017075036,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-09-01,Adverso,4.83306,471.45735705559923,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-10-01,Adverso,4.83639,470.2581127946838,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-11-01,Adverso,4.83468,469.16508988509645,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-12-01,Adverso,4.83302,468.18753510124884,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-01-01,Adverso,4.83131,467.1188324086166,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-02-01,Adverso,4.8296,466.15454143623236,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-03-01,Adverso,4.82801,465.2142766048652,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-04-01,Adverso,4.8263,464.47543575888847,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-05-01,Adverso,4.82464,463.76549346091355,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-06-01,Adverso,4.82293,463.1649508706603,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-07-01,Adverso,4.82127,462.51555070194763,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-08-01,Adverso,4.81956,461.95998432933595,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2026-09-01,Adverso estrutural,4.65,473.7600973168581,NA,473.44425216922303,1.226,1.1197368421052631,505.25446971734647,FRED: observado,FRED: observado
+2026-10-01,Adverso estrutural,NA,NA,NA,NA,NA,NA,NA,Livre no BVAR,Livre no BVAR
+2026-11-01,Adverso estrutural,4.6355,470.9530201312334,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Hipotese: US$ 111
+2026-12-01,Adverso estrutural,4.66334,492.39105297216366,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-01-01,Adverso estrutural,4.68962,501.80190352909875,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-02-01,Adverso estrutural,4.70921,502.3362736590602,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-03-01,Adverso estrutural,4.72624,500.74373129205895,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-04-01,Adverso estrutural,4.74507,500.12376945685776,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-05-01,Adverso estrutural,4.76233,499.0988625154123,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-06-01,Adverso estrutural,4.78015,497.79821022047537,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-07-01,Adverso estrutural,4.79741,496.84125177474215,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-08-01,Adverso estrutural,4.81524,495.7925621883766,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-09-01,Adverso estrutural,4.83306,494.74187538453356,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-10-01,Adverso estrutural,4.83639,493.6898335925318,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-11-01,Adverso estrutural,4.83468,492.7341247233659,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-12-01,Adverso estrutural,4.83302,491.89887754655706,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-01-01,Adverso estrutural,4.83131,490.86811692321754,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-02-01,Adverso estrutural,4.8296,489.9851478215494,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-03-01,Adverso estrutural,4.82801,489.0611795480723,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-04-01,Adverso estrutural,4.8263,488.42349731201847,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-05-01,Adverso estrutural,4.82464,487.7710124565951,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-06-01,Adverso estrutural,4.82293,487.2895685866142,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-07-01,Adverso estrutural,4.82127,486.67493428530986,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-08-01,Adverso estrutural,4.81956,486.2108201290542,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2026-09-01,Base,4.65,473.7600973168581,NA,473.44425216922303,1.226,1.1197368421052631,505.25446971734647,FRED: observado,FRED: observado
+2026-10-01,Base,NA,NA,NA,NA,NA,NA,NA,Livre no BVAR,Livre no BVAR
+2026-11-01,Base,4.6355,470.9530201312334,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Hipotese: US$ 111
+2026-12-01,Base,4.66334,472.23308057616686,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-01-01,Base,4.68962,468.5828089005546,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-02-01,Base,4.70921,464.97610693159663,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-03-01,Base,4.72624,462.1338767149675,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-04-01,Base,4.74507,459.9353300666526,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-05-01,Base,4.76233,457.95446383491185,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-06-01,Base,4.78015,456.15317289582623,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-07-01,Base,4.79741,454.4358046591334,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-08-01,Base,4.81524,452.83971271821775,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-09-01,Base,4.83306,451.33837903573834,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-10-01,Base,4.83639,449.9809670330265,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-11-01,Base,4.83468,448.73996502535834,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-12-01,Base,4.83302,447.6086032576553,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-01-01,Base,4.83131,446.49881553882295,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-02-01,Base,4.8296,445.4463568563388,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-03-01,Base,4.82801,444.48840560547495,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-04-01,Base,4.8263,443.63964417394055,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-05-01,Base,4.82464,442.86716424969256,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-06-01,Base,4.82293,442.13675329123384,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-07-01,Base,4.82127,441.4493824811383,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-08-01,Base,4.81956,440.7938016458383,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2026-09-01,Benigno,4.65,473.7600973168581,NA,473.44425216922303,1.226,1.1197368421052631,505.25446971734647,FRED: observado,FRED: observado
+2026-10-01,Benigno,NA,NA,NA,NA,NA,NA,NA,Livre no BVAR,Livre no BVAR
+2026-11-01,Benigno,4.6355,470.9530201312334,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Hipotese: US$ 111
+2026-12-01,Benigno,4.66334,462.6281926313369,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-01-01,Benigno,4.68962,450.9601889341277,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-02-01,Benigno,4.70921,444.4285067194413,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-03-01,Benigno,4.72624,440.66187180694357,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-04-01,Benigno,4.74507,437.26637204437395,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-05-01,Benigno,4.76233,434.54426420635565,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-06-01,Benigno,4.78015,432.34972143239554,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-07-01,Benigno,4.79741,430.0282678191845,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-08-01,Benigno,4.81524,427.992164207886,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-09-01,Benigno,4.83306,426.1253112703179,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-10-01,Benigno,4.83639,424.5185101959316,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-11-01,Benigno,4.83468,423.0432607334115,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2027-12-01,Benigno,4.83302,421.6674741486629,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-01-01,Benigno,4.83131,420.49223050370574,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-02-01,Benigno,4.8296,419.2990688445968,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-03-01,Benigno,4.82801,418.3128538014751,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-04-01,Benigno,4.8263,417.2881420539853,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-05-01,Benigno,4.82464,416.41533304394045,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-06-01,Benigno,4.82293,415.4760511402225,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-07-01,Benigno,4.82127,414.7274772129532,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent
+2028-08-01,Benigno,4.81956,413.91039671708364,NA,NA,NA,NA,NA,Bloomberg: zero como proxy,Cenario Brent

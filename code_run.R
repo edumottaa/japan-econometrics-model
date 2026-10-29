@@ -2,9 +2,12 @@
 setwd("C:/Users/dudup/OneDrive/japan-econometrics-model")
 
 # 1. Dados e visualização
-source("src/1- data_collection.R")
-source("src/2- data_cleaning.R")
-source("src/3- feature_engineering.R")
+source("src/1- data_collection/1- data_collection bvar estrutural.R")
+source("src/1- data_collection/2- data_collection s2.R")
+source("src/2- data_cleaning/1- data_cleaning bvar estrutural.R")
+source("src/2- data_cleaning/2- data_cleaning s2.R")
+source("src/3- feature_engineering/1- feature_engineering bvar estrutural.R")
+source("src/3- feature_engineering/2- feature_engineering s2.R")
 source("src/4- data visualization.R")
 
 # 2. VARs de referência; o VAR externo é .
@@ -23,13 +26,10 @@ source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF ch
 source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque demanda domestica.R")
 source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque oferta domestica.R")
 source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque premio fiscal.R")
-# demanda global não é identificado separadamente na especificação de sete variáveis.
 source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque oferta petroleo.R")
 source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque politica Fed.R")
-# risk off global não é identificado separadamente na especificação de sete variáveis.
 
-
-# 6. Avaliação: CVs pausados; descomentar somente quando quiser retomar.
+# 6. Evaluation: testes CV
 source("src/evaluation/corss validation BVAR reduzido pacote bvarsigns.R")
 source("src/evaluation/cross validation BVAR reduzido condicionado.R")
 source("src/evaluation/cross_validation_s2.R")

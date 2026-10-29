@@ -1,0 +1,4 @@
+periodo,.model,casos
+2015-2019,arima,132
+2020-2021,arima,64
+2022 em diante,arima,144

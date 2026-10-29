@@ -1,8 +1,0 @@
-suppressMessages(library(bsvarSIGNs))
-m <- readRDS("C:/Users/dudup/AppData/Roaming/Claude/scratch-workspaces/bd3503e6-7efa-47ef-bfc9-075a162afcc3/947fe66d-9d37-4a09-b09d-efe19023253e/scratch-2026-10-14-6e55f1/inv/mats.rds")
-spec <- specify_bsvarSIGN$new(data = m$int, p = 12, foreign = m$ext)
-cat("hyper (default, no estimate_hyper):", dim(spec$prior$hyper), "\n")
-print(signif(spec$prior$hyper[1:13, 1], 4))
-set.seed(123)
-tt <- system.time(invisible(capture.output(post <- estimate(spec, S = 30, show_progress = FALSE))))
-cat("estimate S=30:", round(tt["elapsed"], 1), "s | any NA:", anyNA(post$posterior$B), "\n")

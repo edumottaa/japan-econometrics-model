@@ -1,0 +1,76 @@
+lags,modelo,variavel,date,media
+6,Original,atividade,2026-12-01,5.1038372995263375
+6,Original,atividade,2027-12-01,-5.680819663930572
+6,Original,atividade,2028-08-01,-4.963047680203566
+6,Original,cpi_core,2026-12-01,2.0011815294425643
+6,Original,cpi_core,2027-12-01,1.6152314308117115
+6,Original,cpi_core,2028-08-01,1.4079600752850463
+6,Original,inclinacao,2026-12-01,1.1434114094317458
+6,Original,inclinacao,2027-12-01,1.2695520083486898
+6,Original,inclinacao,2028-08-01,1.3912534590007448
+6,Original,juro_curto,2026-12-01,1.4862692002125524
+6,Original,juro_curto,2027-12-01,1.647686245912991
+6,Original,juro_curto,2028-08-01,1.5291311379926178
+6,Original,usdjpy,2026-12-01,155.19385630693594
+6,Original,usdjpy,2027-12-01,161.07172988514398
+6,Original,usdjpy,2028-08-01,162.9854342862546
+6,"BoJ dezembro 1,50",atividade,2026-12-01,5.100301169633554
+6,"BoJ dezembro 1,50",atividade,2027-12-01,-5.492838964177837
+6,"BoJ dezembro 1,50",atividade,2028-08-01,-4.9597480577234165
+6,"BoJ dezembro 1,50",cpi_core,2026-12-01,2.0081615230243575
+6,"BoJ dezembro 1,50",cpi_core,2027-12-01,1.6055452183506211
+6,"BoJ dezembro 1,50",cpi_core,2028-08-01,1.428061143051982
+6,"BoJ dezembro 1,50",inclinacao,2026-12-01,1.1467258116161092
+6,"BoJ dezembro 1,50",inclinacao,2027-12-01,1.2720779256251182
+6,"BoJ dezembro 1,50",inclinacao,2028-08-01,1.3968455179487929
+6,"BoJ dezembro 1,50",juro_curto,2026-12-01,1.5
+6,"BoJ dezembro 1,50",juro_curto,2027-12-01,1.653814801969372
+6,"BoJ dezembro 1,50",juro_curto,2028-08-01,1.538640959162465
+6,"BoJ dezembro 1,50",usdjpy,2026-12-01,155.4076834189296
+6,"BoJ dezembro 1,50",usdjpy,2027-12-01,160.85457987786617
+6,"BoJ dezembro 1,50",usdjpy,2028-08-01,163.01108549967392
+6,Inflacao suave,atividade,2026-12-01,5.06829905509351
+6,Inflacao suave,atividade,2027-12-01,-5.522016520855716
+6,Inflacao suave,atividade,2028-08-01,-4.933274890430479
+6,Inflacao suave,cpi_core,2026-12-01,2.0153800536166195
+6,Inflacao suave,cpi_core,2027-12-01,1.864392621113778
+6,Inflacao suave,cpi_core,2028-08-01,1.895235038458782
+6,Inflacao suave,inclinacao,2026-12-01,1.1311507020200946
+6,Inflacao suave,inclinacao,2027-12-01,1.2439155883485464
+6,Inflacao suave,inclinacao,2028-08-01,1.3778122206969219
+6,Inflacao suave,juro_curto,2026-12-01,1.4803729457168047
+6,Inflacao suave,juro_curto,2027-12-01,1.6413857521088053
+6,Inflacao suave,juro_curto,2028-08-01,1.5393747037517564
+6,Inflacao suave,usdjpy,2026-12-01,155.0768327355316
+6,Inflacao suave,usdjpy,2027-12-01,161.38255771949719
+6,Inflacao suave,usdjpy,2028-08-01,163.0178043287725
+6,Tendencia sem prior,atividade,2026-12-01,6.73371455446514
+6,Tendencia sem prior,atividade,2027-12-01,-0.6544416904357122
+6,Tendencia sem prior,atividade,2028-08-01,-0.38627925064654095
+6,Tendencia sem prior,cpi_core,2026-12-01,2.142469564269898
+6,Tendencia sem prior,cpi_core,2027-12-01,2.2200763267231105
+6,Tendencia sem prior,cpi_core,2028-08-01,2.1585360145529653
+6,Tendencia sem prior,inclinacao,2026-12-01,1.1013963374547362
+6,Tendencia sem prior,inclinacao,2027-12-01,1.1278164779674749
+6,Tendencia sem prior,inclinacao,2028-08-01,1.2239237730456516
+6,Tendencia sem prior,juro_curto,2026-12-01,1.5093568115426992
+6,Tendencia sem prior,juro_curto,2027-12-01,1.9347298063391285
+6,Tendencia sem prior,juro_curto,2028-08-01,2.0177687677761393
+6,Tendencia sem prior,usdjpy,2026-12-01,155.34956325329173
+6,Tendencia sem prior,usdjpy,2027-12-01,160.657833232391
+6,Tendencia sem prior,usdjpy,2028-08-01,160.88690085071377
+6,Prior longo prazo,atividade,2026-12-01,6.8419332689448735
+6,Prior longo prazo,atividade,2027-12-01,-0.3893798937249196
+6,Prior longo prazo,atividade,2028-08-01,-0.14279389799359998
+6,Prior longo prazo,cpi_core,2026-12-01,2.1417963052263747
+6,Prior longo prazo,cpi_core,2027-12-01,2.17419105610692
+6,Prior longo prazo,cpi_core,2028-08-01,2.0978326148809283
+6,Prior longo prazo,inclinacao,2026-12-01,1.1071907166000425
+6,Prior longo prazo,inclinacao,2027-12-01,1.1395609279268468
+6,Prior longo prazo,inclinacao,2028-08-01,1.2313441040175332
+6,Prior longo prazo,juro_curto,2026-12-01,1.5073574158291747
+6,Prior longo prazo,juro_curto,2027-12-01,1.844323809723613
+6,Prior longo prazo,juro_curto,2028-08-01,1.8554863217525148
+6,Prior longo prazo,usdjpy,2026-12-01,155.12437651849038
+6,Prior longo prazo,usdjpy,2027-12-01,159.4307741005018
+6,Prior longo prazo,usdjpy,2028-08-01,159.32696476341522

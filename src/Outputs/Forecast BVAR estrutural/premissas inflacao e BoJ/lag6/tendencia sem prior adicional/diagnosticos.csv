@@ -1,0 +1,5 @@
+cenario,erro_condicoes,sorteios,finitos
+Adverso,0,2500,TRUE
+Adverso estrutural,0,2500,TRUE
+Base,0,2500,TRUE
+Benigno,0,2500,TRUE
