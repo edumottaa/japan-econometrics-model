@@ -26,11 +26,13 @@ As versões antigas e os experimentos permanecem nas pastas existentes. Os model
 
 BVAR estrutural com oito variáveis, inclinação JGB30Y–5Y, seis defasagens, tendência, ponderação exponencial de 0,995 e cenários por choques de oferta. A entrada de execução é `code_run.R`; os parâmetros efetivos devem ser conferidos no script chamado por ele.
 
-Os três testes de pesos com tendência têm executores próprios em:
+## Cópia com âncora terminal do juro
 
-- `src/7- forecast/bvar estrutural/sensibilidade pesos com tendencia/rho_0990/0- rodar.R`
-- `src/7- forecast/bvar estrutural/sensibilidade pesos com tendencia/rho_0980/0- rodar.R`
-- `src/7- forecast/bvar estrutural/sensibilidade pesos com tendencia/rho_0970/0- rodar.R`
+A cópia em `src/chat gpt/jgb30y_5y ancora juros/` termina em setembro/2028 para todas as variáveis. O juro curto terminal é condicionado à banda de 1,75% a 2,25% nos quatro cenários. Os meses intermediários permanecem livres, respeitando as condições já existentes, incluindo 1,50% em dezembro/2026 no Base. A banda é uma premissa terminal de cenário, não uma prior, um choque surpresa do BoJ ou um intervalo de confiança. A média não é fixada em 2%.
+
+Para executar apenas a cópia de cenários, forecast e gráficos com os 2.500 sorteios já estimados, use `src/chat gpt/jgb30y_5y ancora juros/0- rodar forecast.R`. Essa execução não faz coleta geral, estimação do BVAR nem CV. O mês adicional usa as curvas existentes de Brent/Treasury e o ARIMA já estimado da produção mundial. Os resultados vão para `src/Outputs/4- Forecast/jgb30y_5y ancora juros/producao/`, sem substituir os outputs do principal. O `code_run.R` continua apontando para o principal, sem essa âncora.
+
+Os scripts dos testes de rho 0,990, 0,980 e 0,970 foram removidos. Os resultados e modelos estimados desses testes permanecem nas pastas locais de dados e outputs.
 
 O S2 explicativo trimestral está em `src/5- models/s2 models/s2 explicativo trimestral.R`. Os gráficos e diagnósticos são salvos em `src/Outputs/S2/explicativo trimestral/`. Essa primeira especificação ainda tem limitações nos diagnósticos e não identifica efeitos causais.
 
