@@ -1,36 +1,35 @@
-# Executar as etapas na mesma sessão, em ordem sequencial.
+# Modelo atual: produção mundial, tendência, pesos 0,995 e spread JGB30Y−5Y.
+# Executar as etapas na mesma sessão. Os testes demorados ficam opcionais.
 setwd("C:/Users/dudup/OneDrive/japan-econometrics-model")
+.libPaths(c("C:/Users/dudup/AppData/Local/R/win-library/4.6", .libPaths()))
+rodar_coleta <- TRUE
+rodar_estimacao <- TRUE
+rodar_cv <- FALSE
 
-# 1. Dados e visualização
-source("src/1- data_collection/1- data_collection bvar estrutural.R")
-source("src/1- data_collection/2- data_collection s2.R")
-source("src/2- data_cleaning/1- data_cleaning bvar estrutural.R")
-source("src/2- data_cleaning/2- data_cleaning s2.R")
-source("src/3- feature_engineering/1- feature_engineering bvar estrutural.R")
-source("src/3- feature_engineering/2- feature_engineering s2.R")
-source("src/4- data visualization.R")
+# 1. Coleta, incluindo JGB30Y e exportações do MoF antes feitas pelo script 4.
+if (rodar_coleta) {
+  source("src/1- data_collection/1- data_collection bvar estrutural.R", encoding = "UTF-8")
+}
 
-# 2. VARs de referência; o VAR externo é .
-source("src/models/Var models/var doméstico simples.R") #var doméstico como comparação
-source("src/models/Var models/var externo simples.R")   #necessário ao BVAR condicionado
+# 2. Estimação e IRFs do modelo atual.
+# O modelo ainda lê a base congelada de jan/2000 a ago/2026 declarada nele.
+# A coleta acima atualiza as fontes; não estende automaticamente essa base.
+if (rodar_estimacao) {
+  source("src/5- models/Structural BVAR models/Bvar estrutural producao mundial JGB30Y-5Y.R",
+         encoding = "UTF-8")
+}
 
-# 3. BVARs reduzidos
-source("src/models/Reduced BVAR models/Bvar reduzido (pacote Bvar signs).R")     
-source("src/models/Reduced BVAR models/bvar reduzido condicionado (Patote BVAR).R")
+# 3. Quatro cenários, forecast e gráficos do mesmo modelo.
+pasta_forecast <- "src/7- forecast/bvar estrutural/jgb30y_5y com tendencia"
+source(file.path(pasta_forecast, "1- cenario oferta.R"), encoding = "UTF-8")
+source(file.path(pasta_forecast, "2- forecast.R"), encoding = "UTF-8")
+source(file.path(pasta_forecast, "3- graficos.R"), encoding = "UTF-8")
 
-# 4. BVAR estrutural: sete variáveis, p=6 e sete choques; CV ex post
-source("src/5- models/Structural BVAR models/Bvar estrutural choque BoJ (pacote Bvar signs).R")
-
-# 5. IRFs: executar após estimar o modelo estrutural (post_boj).
-source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque BoJ.R")
-source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque demanda domestica.R")
-source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque oferta domestica.R")
-source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque premio fiscal.R")
-source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque oferta petroleo.R")
-source("src/Outputs/IRF e FEVD/IRF (Bvar estrutural - bvarsigns)/Códigos/IRF choque politica Fed.R")
-
-# 6. Evaluation: testes CV
-source("src/evaluation/corss validation BVAR reduzido pacote bvarsigns.R")
-source("src/evaluation/cross validation BVAR reduzido condicionado.R")
-source("src/evaluation/cross_validation_s2.R")
+# 4. CV, previsão histórica e benchmarks, nessa ordem.
+if (rodar_cv) {
+  pasta_cv <- "src/6- evaluation/BVAR sestrutural"
+  source(file.path(pasta_cv, "cross validation BVAR reduzido pesos exponenciais.R"), encoding = "UTF-8")
+  source(file.path(pasta_cv, "previsao historica BVAR 2022 a 2026.R"), encoding = "UTF-8")
+  source(file.path(pasta_cv, "graficos e benchmarks CV modelo novo.R"), encoding = "UTF-8")
+}
 

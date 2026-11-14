@@ -1,3 +1,33 @@
-/data
-/articles
-/outputs
+# Dados e artigos locais
+/data/
+/articles/
+
+# Resultados gerados pelos scripts (permanecem no computador)
+/outputs/
+/src/Outputs/
+
+# Temporários, dependências e anexos da ferramenta
+/tmp/
+**/node_modules/
+/.codex-remote-attachments/
+
+# Sessões e arquivos gerados pelo R/RStudio
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+Rplots.pdf
+
+# Credenciais locais; somente os exemplos podem ser versionados
+.Renviron
+.Renviron.*
+!.Renviron.example
+.env
+.env.*
+!.env.example
+
+# Arquivos auxiliares do sistema e do Office
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*

@@ -1,0 +1,32 @@
+Sys.setlocale('LC_ALL','Portuguese_Brazil.utf8')
+.libPaths(c('C:/Users/dudup/AppData/Local/R/win-library/4.6',.libPaths()))
+suppressPackageStartupMessages(library(tidyverse));suppressPackageStartupMessages(library(fpp3))
+trabalho <- 'C:/Users/dudup/OneDrive/japan-econometrics-model/src/Outputs/4- Forecast/cenario oferta estrutural central'
+anterior <- 'C:/Users/dudup/OneDrive/japan-econometrics-model/src/Outputs/4- Forecast/choque unico Treasury/producao'
+pasta <- file.path(trabalho,'producao')
+r <- readRDS(file.path(pasta,'resumo.rds'))
+antigo <- readRDS(file.path(anterior,'resumo.rds'))
+a <- r |> filter(cenario!='Adverso estrutural') |> arrange(cenario,variavel,date)
+b <- antigo |> filter(cenario!='Adverso estrutural') |> arrange(cenario,variavel,date)
+stopifnot(identical(a,b),all(is.finite(r$media)),nrow(r)==480L)
+estrutura <- readRDS(file.path(pasta,'Adverso estrutural.rds'))
+efeito <- readRDS(file.path(pasta,'resposta oferta.rds'))
+caminhos <- readRDS(file.path(pasta,'caminhos_novos.rds'))
+base <- caminhos |> filter(cenario=='Base') |> arrange(date)
+c <- caminhos |> filter(cenario=='Adverso estrutural') |> arrange(date)
+alvo <- c$brent-base$brent;alvo[is.na(alvo)]<-0
+stopifnot(max(abs(efeito[,'brent']-alvo))<1e-8,
+  all(is.finite(estrutura$trajetorias)),all(is.finite(estrutura$medias)))
+niveis <- readRDS(file.path(pasta,'atividade niveis.rds'))
+n0 <- niveis |> filter(cenario=='Base') |> arrange(date)
+n1 <- niveis |> filter(cenario=='Adverso estrutural') |> arrange(date)
+stopifnot(max(abs(n1$atividade/n0$atividade-exp(efeito[,'atividade']/100)))<1e-10)
+stopifnot(all(is.na(filter(r,cenario=='Adverso estrutural')$inferior95)))
+pib <- readRDS(file.path(pasta,'PIB/forecast_pib.rds'))
+pib0 <- readRDS(file.path(anterior,'PIB/forecast_pib.rds'))
+stopifnot(max(pib$resumo$date)==yearquarter('2028 Q2'),all(is.finite(pib$resumo$media)))
+stopifnot(identical(pib$resumo |> filter(cenario!='Adverso estrutural'),
+  pib0$resumo |> filter(cenario!='Adverso estrutural')))
+print(pib$anual |> filter(ano==2027),width=Inf)
+print(r |> filter(date==max(date)),width=Inf)
+cat('VERIFICADO: tres cenarios identicos; Brent exato; mesma resposta de oferta; PIB ate 2028T2.\n')

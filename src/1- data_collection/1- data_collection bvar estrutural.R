@@ -9,9 +9,10 @@ library(readxl)
 library(jsonlite)
 
 setwd("C:/Users/dudup/OneDrive/japan-econometrics-model")
+if (file.exists(".Renviron")) readRenviron(".Renviron")
 
 # 1.1. FRED: juros americanos, petróleo, volatilidade, câmbio e bolsa
-fredr_set_key("19da91aa806704d2aa100725f3e017a7")
+fredr_set_key(Sys.getenv("FRED_API_KEY"))
 
 series_ids <- c(
   "DGS2",            # 1. Taxa do Treasury americano de 2 anos (%)
@@ -28,7 +29,7 @@ fred <- map_dfr(series_ids, ~ fredr(.x,
   pivot_wider(names_from = series_id, values_from = value)
 
 # 1.2. e-Stat: CPI subjacente, sem alimentos frescos
-app_id_estat <- "7750945adab45d705c86fcbda91715447f0f088c"
+app_id_estat <- Sys.getenv("ESTAT_APP_ID")
 cpi <- estat_getStatsData(
   appId       = app_id_estat,
   statsDataId = "0003427113",  # Ano-base: 2020
@@ -52,7 +53,8 @@ stopifnot(nrow(elo_cpi) == 1L)
 cpi <- bind_rows(cpi, cpi_2025 |> filter(date > max(cpi$date)) |>
   transmute(date, cpi_core = cpi_novo * elo_cpi$cpi_core / elo_cpi$cpi_novo))
 
-# 1.3. MoF: diferença entre as taxas dos JGBs de 10 e 2 anos
+# 1.3. MoF: JGB30Y e spreads 10Y−2Y, 30Y−5Y e 30Y−10Y
+# Taxas de maturidade constante; médias mensais das diferenças diárias.
 url <- "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/"
 
 le_jgb <- function(arquivo) {
@@ -61,12 +63,58 @@ le_jgb <- function(arquivo) {
            col_types = cols(.default = col_double(), Date = col_character()))
 }
 
-jgb <- bind_rows(le_jgb("historical/jgbcme_all.csv"), le_jgb("jgbcme.csv")) |>
+jgb_mof <- bind_rows(le_jgb("historical/jgbcme_all.csv"), le_jgb("jgbcme.csv")) |>
   mutate(Date = ymd(Date, quiet = TRUE)) |>
   filter(!is.na(Date), Date >= "2000-01-01") |>
-  distinct(Date, .keep_all = TRUE) |>
+  distinct(Date, .keep_all = TRUE)
+
+jgb <- jgb_mof |>
   group_by(date = floor_date(Date, "month")) |>
   summarise(inclinacao_10_2 = mean(`10Y` - `2Y`, na.rm = TRUE))
+
+jgb_diario <- jgb_mof |>
+  transmute(date = Date, jgb30y = `30Y`, jgb5y = `5Y`) |>
+  filter(is.finite(jgb30y), is.finite(jgb5y)) |>
+  mutate(inclinacao_30_5 = jgb30y - jgb5y) |>
+  arrange(date)
+
+jgb_mensal <- jgb_diario |>
+  group_by(date = floor_date(date, "month")) |>
+  summarise(jgb30y = mean(jgb30y), jgb5y = mean(jgb5y),
+            inclinacao_30_5 = mean(inclinacao_30_5), dias = n(), .groups = "drop") |>
+  mutate(mes_completo = date < floor_date(Sys.Date(), "month"))
+
+stopifnot(nrow(jgb_mensal) > 0,
+          min(jgb_mensal$date) == as.Date("2000-01-01"),
+          all(is.finite(jgb_mensal$inclinacao_30_5)))
+dir.create("data/raw", recursive = TRUE, showWarnings = FALSE)
+dir.create("data/processed", recursive = TRUE, showWarnings = FALSE)
+write_csv(jgb_diario, "data/raw/jgb30y_5y_mof_diario.csv")
+write_csv(jgb_mensal, "data/processed/jgb30y_5y_mof_mensal.csv")
+message("JGB 30Y/5Y: ", min(jgb_mensal$date), " a ", max(jgb_mensal$date),
+        " | ", nrow(jgb_mensal), " meses.")
+
+# JGB 30Y−10Y: reutilizar a mesma coleta diaria do MoF.
+jgb30_10_diario <- jgb_mof |>
+  transmute(date = Date, jgb30y = `30Y`, jgb10y = `10Y`) |>
+  filter(is.finite(jgb30y), is.finite(jgb10y)) |>
+  mutate(inclinacao_30_10 = jgb30y - jgb10y) |>
+  arrange(date)
+
+jgb30_10_mensal <- jgb30_10_diario |>
+  group_by(date = floor_date(date, "month")) |>
+  summarise(jgb30y = mean(jgb30y), jgb10y = mean(jgb10y),
+            inclinacao_30_10 = mean(inclinacao_30_10), dias = n(), .groups = "drop") |>
+  mutate(mes_completo = date < floor_date(Sys.Date(), "month"))
+
+stopifnot(nrow(jgb30_10_mensal) > 0,
+          min(jgb30_10_mensal$date) == as.Date("2000-01-01"),
+          all(is.finite(jgb30_10_mensal$inclinacao_30_10)))
+
+write_csv(jgb30_10_diario, "data/raw/jgb30y_10y_mof_diario.csv")
+write_csv(jgb30_10_mensal, "data/processed/jgb30y_10y_mof_mensal.csv")
+message("JGB 30Y/10Y: ", min(jgb30_10_mensal$date), " a ", max(jgb30_10_mensal$date),
+        " | ", nrow(jgb30_10_mensal), " meses.")
 
 # 1.4. CPB: produção industrial mundial
 mes_cpb <- as.Date(yearmonth(Sys.Date()) - rep(1:6, each = 2))
@@ -106,7 +154,18 @@ atividade <- read_excel("data/ci.xlsx", skip = 6, col_names = FALSE) |>
 shadow <- read_csv("https://raw.githubusercontent.com/jouchinakajima/program/main/yield_M.csv") |>
   transmute(date = ym(YYYYMM), shadow = ShadowRate)
 
-source("src/chat gpt/forecast overnight/1- overnight fim de mes.R", local = TRUE, encoding = "UTF-8")
+# Overnight efetiva de fim de mês, em % a.a. (BoJ/FM02).
+boj_overnight <- fromJSON(paste0(
+  "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en",
+  "&db=FM02&code=STRECLUCON&startDate=200001"))
+overnight_fim_mes <- tibble(
+  date = yearmonth(ym(boj_overnight$RESULTSET$VALUES$SURVEY_DATES[[1]])),
+  overnight_fim_mes = as.numeric(boj_overnight$RESULTSET$VALUES$VALUES[[1]])) |>
+  filter(date < yearmonth(Sys.Date())) |> arrange(date) |> as_tsibble(index = date)
+stopifnot(nrow(overnight_fim_mes) > 0L, !any(has_gaps(overnight_fim_mes)$.gaps),
+          all(is.finite(overnight_fim_mes$overnight_fim_mes)))
+call_rate <- overnight_fim_mes |>
+  as_tibble() |> transmute(date = as.Date(date), call_rate = overnight_fim_mes)
 
 juro_curto <- full_join(shadow, call_rate, by = "date") |>
   filter(date >= "2000-01-01") |>
@@ -116,7 +175,7 @@ juro_curto <- full_join(shadow, call_rate, by = "date") |>
 
 
 data_final_domesticas <- yearmonth("2026 Sep")
-# 1.7. Preparar a amostra de sete variáveis do BVAR estrutural
+# 1.7. Preparar a amostra de oito variáveis do BVAR estrutural
 dados_domesticos <- atividade |>
   full_join(cpi, by = "date") |>
   full_join(select(juro_curto, date, juro_curto), by = "date") |>

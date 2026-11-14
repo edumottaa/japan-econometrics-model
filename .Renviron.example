@@ -1,0 +1,4 @@
+# Copie este arquivo para .Renviron e preencha as chaves localmente.
+# O arquivo .Renviron é ignorado pelo Git.
+FRED_API_KEY=
+ESTAT_APP_ID=

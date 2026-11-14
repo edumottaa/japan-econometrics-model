@@ -1,18 +1,18 @@
-# Base trimestral para projetar o PIB a partir da atividade do BVAR.
+# Base trimestral para a ponte PIB ~ atividade.
 
 library(fpp3)
 library(tidyverse)
 
 setwd("C:/Users/dudup/OneDrive/japan-econometrics-model")
 
-# 1. PIB real com ajuste sazonal e o mesmo índice coincidente do BVAR.
+# 1. PIB real com ajuste sazonal; índice coincidente usado no BVAR.
 pib <- readRDS("data/cache/cache_pib.rds")
 dados_mensais_pib <- readRDS("data/cache/cache_atividade.rds") |>
   mutate(date = yearmonth(date)) |>
   arrange(date) |>
   as_tsibble(index = date)
 
-# 2. Média trimestral do índice em nível; usar os três meses completos.
+# 2. Médias trimestrais em nível, exigindo os três meses completos.
 atividade_trimestral <- dados_mensais_pib |>
   index_by(trimestre = yearquarter(date)) |>
   summarise(meses = n(), atividade = mean(atividade)) |>
