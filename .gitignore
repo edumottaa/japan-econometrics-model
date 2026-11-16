@@ -5,6 +5,9 @@
 # Resultados gerados pelos scripts (permanecem no computador)
 /outputs/
 /src/Outputs/
+/src/chat gpt/**/resultados/
+/src/chat gpt/**/*.rds
+/src/JGB30Y/**/resultados/
 
 # Temporários, dependências e anexos da ferramenta
 /tmp/

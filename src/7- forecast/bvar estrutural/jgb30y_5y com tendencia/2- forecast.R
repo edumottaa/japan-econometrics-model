@@ -56,8 +56,11 @@ caminhos_forecast <- readRDS(file.path(fonte_caminhos, "caminhos_novos.rds"))
 respostas_oferta <- readRDS(file.path(fonte_caminhos, "resposta oferta.rds"))
 nomes_cenarios <- c("Base", "Benigno", "Adverso", "Adverso estrutural")
 origem <- max(dados_modelo$date)
-h <- 24L
+fim_forecast <- yearmonth('2028 Sep')
+h <- as.integer(fim_forecast-origem)
 datas_futuras <- origem + seq_len(h)
+stopifnot(tail(datas_futuras,1)==fim_forecast)
+banda_juro <- c(inferior=1.75,superior=2.25)
 
 # 3. Forecast
 # implementação da variavel de t~endencia: continuar a tendência em anos a partir do último mês observado
@@ -71,10 +74,7 @@ caminhos_base <- caminhos_forecast |>
   filter(cenario == "Base") |>
   arrange(date)
 condicoes <- as.matrix(select(caminhos_base, all_of(variaveis)))
-# Premissa já adotada: dezembro/2026 em 1,50% no Base; demais cenários podem variar.
-mes_dezembro <- match(as.Date("2026-12-01"), as.Date(datas_futuras))
-stopifnot(!is.na(mes_dezembro))
-condicoes[mes_dezembro, "juro_curto"] <- 1.5
+stopifnot(nrow(condicoes)==h,identical(caminhos_base$date,datas_futuras))
   message("INICIO FORECAST: ", "Base", " | ", format(Sys.time(), "%H:%M:%S"))
   set.seed(123)
   previsao <- post_boj |> forecast(horizon = h, conditional_forecast = condicoes,
@@ -105,6 +105,55 @@ condicoes[mes_dezembro, "juro_curto"] <- 1.5
   stopifnot(all(is.finite(F_base)), erro_base <= 1e-8)
   saveRDS(previsao, file.path(saida, "previsao_base_pacote.rds"))
 
+# 3.1. Banda terminal: Condicionamento do juros terminal a 2% +/- 0,25%
+ganhos_banda <- array(0,c(N,h,S))
+media_terminal <- variancia_terminal <- numeric(S)
+for (s in seq_len(S)) {
+  A <- post_boj$posterior$A[,,s]
+  sigma <- post_boj$posterior$Sigma[,,s]
+  transicoes <- covariancias <- vector('list',h)
+  centro <- estado_inicial
+  for (j in seq_len(h)) {
+    fixas <- which(!is.na(condicoes[j,]))
+    ajuste <- diag(N)
+    Q <- sigma
+    media <- drop(A %*% centro)
+    if (length(fixas)) {
+      ganho <- sigma[,fixas,drop=FALSE] %*% solve(sigma[fixas,fixas,drop=FALSE])
+      media <- media+drop(ganho %*% (condicoes[j,fixas]-media[fixas]))
+      ajuste[,fixas] <- ajuste[,fixas,drop=FALSE]-ganho
+      Q <- sigma-ganho %*% sigma[fixas,,drop=FALSE]
+      Q[fixas,] <- 0; Q[,fixas] <- 0
+      media[fixas] <- condicoes[j,fixas]
+    }
+    transicoes[[j]] <- ajuste %*% A[,seq_len(N*p),drop=FALSE]
+    covariancias[[j]] <- (Q+t(Q))/2
+    centro <- c(media,head(centro,N*(p-1)),1,(j+1)/12)
+  }
+  media_terminal[s] <- centro[6]
+  # Sensibilidade do juro terminal as inovacoes de cada mes.
+  peso <- rep(0,N*p); peso[6] <- 1
+  projecoes <- vector('list',h)
+  for (j in h:1) {
+    projecoes[[j]] <- drop(covariancias[[j]] %*% peso[seq_len(N)])
+    peso <- drop(crossprod(transicoes[[j]],peso[seq_len(N)]))+
+      c(peso[-seq_len(N)],rep(0,N))
+  }
+  cov_estado <- rep(0,N*p)
+  for (j in seq_len(h)) {
+    cov_j <- drop(transicoes[[j]] %*% cov_estado)+projecoes[[j]]
+    ganhos_banda[,j,s] <- cov_j
+    cov_estado <- c(cov_j,head(cov_estado,N*(p-1)))
+  }
+  variancia_terminal[s] <- cov_estado[6]
+  stopifnot(is.finite(variancia_terminal[s]),variancia_terminal[s]>0)
+  ganhos_banda[,,s] <- ganhos_banda[,,s]/variancia_terminal[s]
+}
+# Usar os mesmos quantis nos cenarios; calculo em log evita perda numerica nas caudas.
+set.seed(456)
+quantis_banda <- runif(S)
+diagnosticos_banda <- list()
+
 #  Construção dos cenários divergentes do base, somando os efeitos das IRFs decorrentes do choque de oferta do petróleo
 #  Trajetória do cenário = trajetória base + efeito da oferta
   
@@ -113,6 +162,23 @@ for (i in seq_along(nomes_cenarios)) {
   F <- F_base
   resposta <- respostas_oferta[[nomes_cenarios[i]]]
   for (s in seq_len(S)) F[, , s] <- F_base[, , s] + t(resposta)
+  for (s in seq_len(S)) {
+    mu_final <- media_terminal[s]+resposta[h,'juro_curto']
+    desvio <- sqrt(variancia_terminal[s])
+    a <- (banda_juro['inferior']-mu_final)/desvio
+    b <- (banda_juro['superior']-mu_final)/desvio
+    direita <- mu_final<=mean(banda_juro)
+    log_maior <- pnorm(if(direita) a else b,lower.tail=!direita,log.p=TRUE)
+    log_menor <- pnorm(if(direita) b else a,lower.tail=!direita,log.p=TRUE)
+    log_prob <- log_maior+log1p(-quantis_banda[s]*(-expm1(log_menor-log_maior)))
+    terminal <- mu_final+desvio*qnorm(log_prob,lower.tail=!direita,log.p=TRUE)
+    F[,,s] <- F[,,s]+ganhos_banda[,,s]*(terminal-F[6,h,s])
+  }
+  stopifnot(all(F[6,h,]>=banda_juro['inferior']-1e-10),
+            all(F[6,h,]<=banda_juro['superior']+1e-10))
+  diagnosticos_banda[[i]] <- tibble(cenario=nomes_cenarios[i],date=fim_forecast,
+    limite_inferior=banda_juro['inferior'],limite_superior=banda_juro['superior'],
+    minimo=min(F[6,h,]),media=mean(F[6,h,]),maximo=max(F[6,h,]),sorteios=S)
   caminhos <- caminhos_forecast |> filter(cenario == nomes_cenarios[i]) |> arrange(date) 
   fixas_brent <- which(!is.na(caminhos$brent))   #Conferir se o Brent chegou ao resultado desejado
   erro_condicoes <- max(abs(F[2, fixas_brent, ] - caminhos$brent[fixas_brent]))
@@ -154,7 +220,10 @@ diagnostico_forecast <- bind_rows(checagens)
 saveRDS(list(previsoes = previsoes_bvar, resumo = resumo_forecast,
              caminhos = caminhos_forecast, diagnosticos = diagnostico_forecast,
              dados_modelo = dados_modelo, origem = origem,
-             pesos_exponenciais = attr(post_boj, "pesos_exponenciais")), file.path(saida, "forecast_bvar.rds"))
+             pesos_exponenciais = attr(post_boj, "pesos_exponenciais"),
+             banda_juro=banda_juro,data_banda=fim_forecast), file.path(saida, "forecast_bvar.rds"))
+write_csv(bind_rows(diagnosticos_banda) |> mutate(date=as.Date(date)),
+          file.path(saida,'diagnosticos banda juro.csv'))
 write_csv(resumo_forecast |> mutate(date = as.Date(date)), file.path(saida, "resumo_forecast.csv"))
 write_csv(caminhos_forecast |> mutate(date = as.Date(date)), file.path(saida, "caminhos_externos.csv"))
 write_csv(diagnostico_forecast |> mutate(origem = as.Date(origem)), file.path(saida, "diagnosticos.csv"))

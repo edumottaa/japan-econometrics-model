@@ -23,13 +23,16 @@ g<-ggplot(d,aes(date,media,colour=cenario))+geom_line(linewidth=.8)+
   scale_x_date(date_breaks='1 year',date_labels='%Y')+theme_minimal(base_size=11)+
   theme(legend.position='bottom',strip.text=element_text(face='bold'),panel.grid.minor=element_blank())+
   labs(title='Forecast | BVAR com tendencia e JGB 30a-5a',
-    subtitle='Todos os cenarios via oferta | Brent fixado; demais variaveis respondem aos mesmos choques',x=NULL,y=NULL,colour=NULL,
-    caption='Base condicionado ao mercado. Benigno, adverso e estrutural: contrafactuais pontuais pela mesma IRF mediana.\nCaminho do Brent reproduzido por choques de oferta de intensidades calculadas; sem impor queda da atividade japonesa.')
+    subtitle='Setembro/2026 a setembro/2028 | cenarios via oferta e condicao terminal do juro',x=NULL,y=NULL,colour=NULL,
+    caption='Juro em setembro/2028 condicionado entre 1,75% e 2,25% em cada cenario. A banda nao e intervalo de confianca.\nBrent reproduzido pelos choques de oferta; demais variaveis tambem respondem ao condicionamento do juro.')
 ggsave(file.path(saida,'forecast cenarios.png'),g,width=15,height=12,dpi=160,bg='white')
 gb<-ggplot(filter(d,cenario=='Base'),aes(date,media))+geom_ribbon(aes(ymin=inferior95,ymax=superior95),fill='#2166AC',alpha=.13)+
   geom_ribbon(aes(ymin=inferior80,ymax=superior80),fill='#2166AC',alpha=.23)+geom_line(colour='#2166AC',linewidth=.8)+
   geom_text(data=filter(lab,cenario=='Base'),aes(label=rotulo),vjust=-.7,size=3.2)+
   facet_wrap(vars(variavel),ncol=2,scales='free_y')+scale_x_date(date_breaks='1 year',date_labels='%Y')+
-  theme_minimal(base_size=11)+labs(title='Cenario base | BVAR com tendencia e JGB 30a-5a',subtitle='Medias e intervalos de 80% e 95%',x=NULL,y=NULL)
+  theme_minimal(base_size=11)+labs(title='Cenario base | BVAR com tendencia e JGB 30a-5a',
+    subtitle='Setembro/2026 a setembro/2028 | medias e intervalos condicionais de 80% e 95%',x=NULL,y=NULL,
+    caption='Juro terminal entre 1,75% e 2,25%. A media dentro da banda e determinada pelo modelo, nao fixada em 2%.')
 ggsave(file.path(saida,'forecast base.png'),gb,width=15,height=12,dpi=160,bg='white')
+if (interactive()) { print(g); print(gb) }
 cat('FORECAST_CONCLUIDO',tipo,'\n')

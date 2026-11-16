@@ -1,0 +1,34 @@
+variavel,curva,data_snapshot,horizonte_meses,taxa_pct
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,0,5.30775
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,1,5.31425
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,2,5.32081
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,3,5.32623
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,6,5.34167
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,9,5.35543
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,12,5.36842
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,15,5.37722
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,18,5.38648
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,22,5.39883
+ust30,YCGT0025 US Treasury Actives - FWCV Horizon Curve - tenor 30Y (par),2026-10-30,24,5.40503
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,0,1.87125
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,1,1.91383
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,2,1.95548
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,3,1.99228
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,6,2.08325
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,9,2.14951
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,12,2.20161
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,15,2.25228
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,18,2.29614
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,22,2.34243
+ois2,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 2Y (par),2026-10-30,24,2.36319
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,0,1.22775
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,1,1.31939
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,2,1.44257
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,3,1.48822
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,6,1.68100
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,9,1.82004
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,12,1.99886
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,15,2.05501
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,18,2.10637
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,22,2.15998
+ois_1m,JPY OIS YCSW0195 - FWCV Horizon Curve - tenor 1M (par),2026-10-30,24,2.27287

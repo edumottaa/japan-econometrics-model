@@ -1,0 +1,10 @@
+# Rodar depois do CV do PIB. Somente tabelas/graficos; nao reestima modelos.
+setwd('C:/Users/dudup/OneDrive/japan-econometrics-model')
+source('src/chat gpt/PIB atividade BVAR ex ante/00_configuracao.R',encoding='UTF-8')
+iniciar_pib_cv()
+arquivo <- file.path(saida_pib,'resultados_cv_pib.rds')
+if(!file.exists(arquivo)) stop('Execute primeiro o code_run.R desta pasta para gerar o CV do PIB.')
+resultado <- readRDS(arquivo)
+if(!identical(resultado$chave,chave_pib_cv()))
+  stop('Resultado de outra configuracao. Conferir a assinatura antes de comparar.')
+resumir_cv_pib(resultado)

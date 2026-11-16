@@ -1,5 +1,13 @@
 # Copia do BVAR com tendencia: inclinacao JGB 30Y - 5Y no lugar de 10Y - 2Y.
 # Demais configuracoes preservadas; os sinais sobre a curva passam a valer para 30Y - 5Y.
+# Forecast atual: sorteios do posterior reponderados pelo satelite de fluxo (tilting entropico).
+# O fluxo nao entra como nova variavel endogena nesta estimacao.
+configuracao_forecast_bvar <- list(
+  usar_satelite_fluxo=TRUE,condicionamento='tilting entropico',
+  formula_satelite='Delta spread ~ 1 + Delta OIS2Y pos-YCC + fluxo(t-2)',
+  fluxo_futuro='media pos-YCC ate a origem',banda_juro_terminal=c(1.75,2.25),
+  executor='src/7- forecast/Satelite fluxo/0- rodar.R',
+  saida='src/Outputs/Satelite fluxo suave')
 .libPaths(c("C:/Users/dudup/AppData/Local/R/win-library/4.6", .libPaths()))
 library(tidyverse)
 library(fpp3)
@@ -200,5 +208,6 @@ stopifnot(all(irfs[2, 2, 1:2, ] > 0), all(irfs[3, 2, 2:7, ] < 0))
 saveRDS(post_boj, file.path(fonte, "modelo.rds"))
 saveRDS(dados_boj, file.path(fonte, "dados.rds"))
 saveRDS(irfs, file.path(fonte, "irfs.rds"))
+saveRDS(configuracao_forecast_bvar,file.path(fonte,"configuracao_forecast.rds"))
 write_csv(diag, file.path(fonte, "diagnostico.csv"))
 print(diag)
